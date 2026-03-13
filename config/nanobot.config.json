@@ -34,7 +34,7 @@
     "maxConcurrentTools": 4,
     "mcpServers": {
       "vision-butler-mcp": {
-        "url": "http://127.0.0.1:8001/mcp",
+        "url": "http://100.92.134.46:8001/mcp",
         "toolTimeout": 60
       }
     }

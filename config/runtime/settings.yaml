@@ -10,17 +10,17 @@ runtime:
 
 telegram:
   bot_token: "8528206918:AAH57ZjZArLz-dd9MAJzrs7-CqUkOoKiiBs"
-  webhook_url: "http://127.0.0.1:18790/telegram/webhook"
+  webhook_url: "http://100.92.134.46:18791/telegram/webhook"
   allowed_update_types:
     - message
     - callback_query
 
 nanobot:
-  base_url: "http://127.0.0.1:3000"
+  base_url: "http://100.92.134.46:18791"
   workspace: vision-butler
 
 mcp:
-  server_url: "http://127.0.0.1:8001"
+  server_url: "http://100.92.134.46:8001"
   timeout_sec: 20
 
 database:
