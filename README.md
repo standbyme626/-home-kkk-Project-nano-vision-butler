@@ -45,6 +45,7 @@
 
 ## Ollama 上下文档位
 - 默认模型：`qwen3.5:4b-32k`（远端 Ollama）
+- 切回阿里百炼：`./scripts/switch_ollama_ctx.sh dashscope --restart`
 - 切到 64k：`./scripts/switch_ollama_ctx.sh 64k --restart`
 - 切回 32k：`./scripts/switch_ollama_ctx.sh 32k --restart`
 - 查看当前档位：`./scripts/switch_ollama_ctx.sh status`

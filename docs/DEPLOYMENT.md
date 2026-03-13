@@ -107,6 +107,7 @@
 
 常用命令：
 - 查看当前档位：`./scripts/switch_ollama_ctx.sh status`
+- 切回阿里百炼：`./scripts/switch_ollama_ctx.sh dashscope --restart`
 - 切到 32k（默认）：`./scripts/switch_ollama_ctx.sh 32k --restart`
 - 切到 64k（长上下文场景）：`./scripts/switch_ollama_ctx.sh 64k --restart`
 
