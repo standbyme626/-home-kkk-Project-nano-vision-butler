@@ -2,8 +2,8 @@
   "agents": {
     "defaults": {
       "workspace": "./gateway/nanobot_workspace/dev",
-      "model": "qwen3.5-flash",
-      "provider": "openai"
+      "model": "qwen3.5:4b-32k",
+      "provider": "custom"
     }
   },
   "channels": {
@@ -20,12 +20,12 @@
   },
   "providers": {
     "custom": {
-      "apiBase": "",
-      "apiKey": ""
+      "apiBase": "http://100.90.236.32:11434/v1",
+      "apiKey": "no-key"
     },
     "openai": {
-      "apiBase": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-      "apiKey": "sk-e2430b25aa8646e28eacf09d2b1d3b50"
+      "apiBase": "",
+      "apiKey": ""
     }
   },
   "gateway": {
