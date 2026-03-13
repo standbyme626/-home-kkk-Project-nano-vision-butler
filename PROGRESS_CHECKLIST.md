@@ -21,7 +21,7 @@
 - [x] Prompt11B-Hotfix Telegram 重复消费防护（单 token 单实例）
 - [x] Prompt11B-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）
 - [x] Prompt12 RK3566 前端最小正式实现
-- [ ] Prompt12A RK3566 板级 bring-up 与基线测量
+- [x] Prompt12A RK3566 板级 bring-up 与基线测量（新增 baseline 脚本与报告模板，2026-03-14 自检通过）
 - [ ] Prompt12B 前端协议冻结（event/heartbeat/command）
 - [ ] Prompt12C 真实采集层替换（V4L2/GStreamer）
 - [ ] Prompt12D 真实 Snapshot 落地（JPEG）
@@ -53,7 +53,7 @@
 - [x] T12-Hotfix Telegram 重复消费防护（单 token 单实例）
 - [x] T12-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）
 - [x] T13 RK3566 前端最小正式实现
-- [ ] T13A 板级 bring-up 与基线测量
+- [x] T13A 板级 bring-up 与基线测量（新增 baseline 脚本与报告模板，2026-03-14 自检通过）
 - [ ] T13B 前端协议冻结（event/heartbeat/command）
 - [ ] T13C 真实采集层替换（V4L2/GStreamer）
 - [ ] T13D 真实 Snapshot 落地（JPEG）
