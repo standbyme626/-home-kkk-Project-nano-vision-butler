@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-vision-butler/schemas/edge_command_response.schema.json",
+  "title": "Edge Command Response v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "type",
+    "ok",
+    "summary",
+    "data",
+    "meta"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "edge.command_response.v1"
+    },
+    "type": {
+      "const": "command_response"
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["command", "command_id", "device_id", "camera_id"],
+      "properties": {
+        "command": {
+          "type": "string",
+          "enum": ["take_snapshot", "get_recent_clip", "ping", "refresh_detection_once"]
+        },
+        "command_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "camera_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "snapshot_uri": {
+          "type": ["string", "null"]
+        },
+        "clip_uri": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["received_at"],
+      "properties": {
+        "trace_id": {
+          "type": ["string", "null"]
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

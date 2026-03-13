@@ -50,8 +50,11 @@ class EdgeRuntimeUnitTests(unittest.TestCase):
         self.assertEqual(result["type"], "edge_run_once")
         self.assertEqual(len(self.backend.events), 1)
         posted = self.backend.events[0]
+        self.assertEqual(posted["schema_version"], "edge.event.v1")
         self.assertEqual(posted["device_id"], "rk3566-dev-01")
         self.assertEqual(posted["camera_id"], "cam-entry-01")
+        self.assertIn("event_id", posted)
+        self.assertIn("objects", posted)
         self.assertIn("object_name", posted)
         self.assertIn("raw_detections", posted)
 
@@ -65,9 +68,13 @@ class EdgeRuntimeUnitTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertEqual(len(self.backend.heartbeats), 1)
         payload = self.backend.heartbeats[0]
+        self.assertEqual(payload["schema_version"], "edge.heartbeat.v1")
         self.assertEqual(payload["device_id"], "rk3566-dev-01")
         self.assertEqual(payload["camera_id"], "cam-entry-01")
         self.assertEqual(payload["trace_id"], "trace-edge-hb-1")
+        self.assertTrue(payload["online"])
+        self.assertIn("last_capture_ok", payload)
+        self.assertIn("last_upload_ok", payload)
         self.assertIn("last_seen", payload)
 
     def test_snapshot_and_clip_commands_return_stable_contract(self) -> None:
@@ -76,11 +83,13 @@ class EdgeRuntimeUnitTests(unittest.TestCase):
 
         self.assertTrue(snapshot["ok"])
         self.assertEqual(snapshot["type"], "command_response")
+        self.assertEqual(snapshot["schema_version"], "edge.command_response.v1")
         self.assertEqual(snapshot["data"]["command"], "take_snapshot")
         self.assertTrue(snapshot["data"]["snapshot_uri"].startswith("file://"))
 
         self.assertTrue(clip["ok"])
         self.assertEqual(clip["type"], "command_response")
+        self.assertEqual(clip["schema_version"], "edge.command_response.v1")
         self.assertEqual(clip["data"]["command"], "get_recent_clip")
         self.assertEqual(clip["data"]["duration_sec"], 6)
         self.assertTrue(clip["data"]["clip_uri"].startswith("file://"))

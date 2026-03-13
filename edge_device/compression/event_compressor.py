@@ -8,6 +8,8 @@ from uuid import uuid4
 from edge_device.capture.camera import CapturedFrame
 from edge_device.inference.detector import Detection
 
+EVENT_SCHEMA_VERSION = "edge.event.v1"
+
 
 def utc_now_iso8601() -> str:
     return datetime.now(tz=timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -21,18 +23,36 @@ class EventCompressor:
         *,
         device_id: str,
         camera_id: str,
+        seq_no: int,
         frame: CapturedFrame,
         detections: list[Detection],
         snapshot_uri: str | None,
         clip_uri: str | None = None,
+        model_version: str | None = None,
         trace_id: str | None = None,
     ) -> dict[str, object]:
         primary = max(detections, key=lambda item: item.confidence) if detections else None
+        emitted_at = utc_now_iso8601()
+        event_id = f"evt-{uuid4().hex[:12]}"
+        serialized_objects = [self._serialize_detection(item) for item in detections]
         payload = {
+            "schema_version": EVENT_SCHEMA_VERSION,
+            "event_id": event_id,
             "device_id": device_id,
             "camera_id": camera_id,
-            "observed_at": frame.captured_at,
+            "seq_no": seq_no,
+            "captured_at": frame.captured_at,
+            "sent_at": emitted_at,
             "event_type": "object_detected" if detections else "scene_observed",
+            "zone_id": primary.zone_id if primary else None,
+            "objects": serialized_objects,
+            "snapshot_uri": snapshot_uri,
+            "clip_uri": clip_uri,
+            "model_version": model_version,
+            "compress_reason": "event_compressor_v1",
+            "signature": None,
+            # Backward-compatible fields consumed by current backend code.
+            "observed_at": frame.captured_at,
             "category": "event",
             "importance": self._importance(detections),
             "summary": self._summary(primary, len(detections), camera_id),
@@ -40,10 +60,7 @@ class EventCompressor:
             "object_class": primary.object_class if primary else "scene",
             "track_id": primary.track_id if primary else None,
             "confidence": round(primary.confidence, 3) if primary else None,
-            "zone_id": primary.zone_id if primary else None,
-            "snapshot_uri": snapshot_uri,
-            "clip_uri": clip_uri,
-            "raw_detections": [self._serialize_detection(item) for item in detections],
+            "raw_detections": serialized_objects,
         }
         if trace_id:
             payload["trace_id"] = trace_id
@@ -51,7 +68,7 @@ class EventCompressor:
         return {
             "schema": "vision_butler.edge.event_envelope.v1",
             "envelope_id": f"env-{uuid4().hex[:12]}",
-            "emitted_at": utc_now_iso8601(),
+            "emitted_at": emitted_at,
             "device_id": device_id,
             "camera_id": camera_id,
             "trace_id": trace_id,

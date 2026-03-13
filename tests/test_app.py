@@ -131,6 +131,89 @@ class AppSkeletonTests(unittest.TestCase):
         self.assertIsNotNone(audit_row)
         self.assertEqual(audit_row["decision"], "allow")
 
+    def test_ingest_event_accepts_schema_version_v1(self) -> None:
+        response = self.client.post(
+            "/device/ingest/event",
+            json={
+                "schema_version": "edge.event.v1",
+                "event_id": "evt-test-v1-001",
+                "device_id": "rk3566-dev-01",
+                "camera_id": "cam-entry-01",
+                "seq_no": 1,
+                "captured_at": "2026-03-14T04:00:00Z",
+                "sent_at": "2026-03-14T04:00:00Z",
+                "event_type": "security_alert",
+                "objects": [
+                    {
+                        "object_name": "person",
+                        "object_class": "person",
+                        "confidence": 0.97,
+                        "bbox": [10, 20, 200, 300],
+                        "zone_id": "entry_door",
+                        "track_id": "trk-001",
+                    }
+                ],
+                "trace_id": "trace-test-ingest-v1",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertTrue(payload["data"]["accepted"])
+
+    def test_ingest_event_rejects_unknown_schema_version(self) -> None:
+        response = self.client.post(
+            "/device/ingest/event",
+            json={
+                "schema_version": "edge.event.v9",
+                "device_id": "rk3566-dev-01",
+                "camera_id": "cam-entry-01",
+                "event_type": "security_alert",
+                "objects": [],
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertFalse(payload["ok"])
+        self.assertIn("Unsupported event schema_version", payload["error"]["message"])
+
+    def test_heartbeat_accepts_schema_version_v1(self) -> None:
+        response = self.client.post(
+            "/device/heartbeat",
+            json={
+                "schema_version": "edge.heartbeat.v1",
+                "device_id": "rk3566-dev-01",
+                "camera_id": "cam-entry-01",
+                "online": True,
+                "sent_at": "2026-03-14T04:00:00Z",
+                "last_capture_ok": True,
+                "last_upload_ok": True,
+                "temperature": 44.5,
+                "trace_id": "trace-test-heartbeat-v1",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["ok"])
+        self.assertEqual(payload["data"]["status"], "online")
+
+    def test_heartbeat_rejects_unknown_schema_version(self) -> None:
+        response = self.client.post(
+            "/device/heartbeat",
+            json={
+                "schema_version": "edge.heartbeat.v9",
+                "device_id": "rk3566-dev-01",
+                "online": True,
+                "sent_at": "2026-03-14T04:00:00Z",
+                "last_capture_ok": True,
+                "last_upload_ok": True,
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertFalse(payload["ok"])
+        self.assertIn("Unsupported heartbeat schema_version", payload["error"]["message"])
+
     def test_ingest_event_rejects_unknown_device(self) -> None:
         response = self.client.post(
             "/device/ingest/event",

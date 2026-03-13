@@ -22,6 +22,8 @@ class PerceptionService:
     """Validate device ingress and persist observation/event/device updates."""
 
     _ALLOWED_STATUSES = {"online", "offline", "degraded"}
+    _EVENT_SCHEMA_VERSION = "edge.event.v1"
+    _HEARTBEAT_SCHEMA_VERSION = "edge.heartbeat.v1"
 
     def __init__(
         self,
@@ -40,18 +42,23 @@ class PerceptionService:
         self._device_profiles = self._build_device_profiles()
 
     def ingest_event(self, payload: dict[str, Any]) -> dict[str, Any]:
-        device_id = require_non_empty(payload.get("device_id"), "device_id")
-        trace_id = self._as_optional_text(payload.get("trace_id"))
+        ingest_payload = self._normalize_event_payload(payload)
+        device_id = require_non_empty(ingest_payload.get("device_id"), "device_id")
+        trace_id = self._as_optional_text(ingest_payload.get("trace_id"))
 
         try:
             profile = self._validate_device_access(
                 device_id=device_id,
-                api_key=self._as_optional_text(payload.get("api_key")),
+                api_key=self._as_optional_text(ingest_payload.get("api_key")),
                 trace_id=trace_id,
                 action="device_ingest_event",
             )
-            device = self._ensure_device_row(device_id=device_id, profile=profile, payload=payload, status_hint="online")
-            ingest_payload = dict(payload)
+            device = self._ensure_device_row(
+                device_id=device_id,
+                profile=profile,
+                payload=ingest_payload,
+                status_hint="online",
+            )
             ingest_payload["device_id"] = device_id
             ingest_payload.setdefault("camera_id", device.camera_id)
             # Event ingress is a liveness signal from edge; keep device status warm.
@@ -117,9 +124,10 @@ class PerceptionService:
             raise
 
     def heartbeat(self, payload: dict[str, Any]) -> dict[str, Any]:
-        device_id = require_non_empty(payload.get("device_id"), "device_id")
-        trace_id = self._as_optional_text(payload.get("trace_id"))
-        status = (self._as_optional_text(payload.get("status")) or "online").lower()
+        heartbeat_payload = self._normalize_heartbeat_payload(payload)
+        device_id = require_non_empty(heartbeat_payload.get("device_id"), "device_id")
+        trace_id = self._as_optional_text(heartbeat_payload.get("trace_id"))
+        status = (self._as_optional_text(heartbeat_payload.get("status")) or "online").lower()
 
         try:
             if status not in self._ALLOWED_STATUSES:
@@ -127,20 +135,20 @@ class PerceptionService:
 
             profile = self._validate_device_access(
                 device_id=device_id,
-                api_key=self._as_optional_text(payload.get("api_key")),
+                api_key=self._as_optional_text(heartbeat_payload.get("api_key")),
                 trace_id=trace_id,
                 action="device_heartbeat",
             )
             current = self._ensure_device_row(
                 device_id=device_id,
                 profile=profile,
-                payload=payload,
+                payload=heartbeat_payload,
                 status_hint=status,
             )
 
             now = utc_now_iso8601()
-            last_seen = self._as_optional_text(payload.get("last_seen")) or now
-            camera_id = self._as_optional_text(payload.get("camera_id")) or current.camera_id
+            last_seen = self._as_optional_text(heartbeat_payload.get("last_seen")) or now
+            camera_id = self._as_optional_text(heartbeat_payload.get("camera_id")) or current.camera_id
             if not camera_id:
                 raise ValueError(f"camera_id missing for device_id={device_id}")
 
@@ -149,17 +157,17 @@ class PerceptionService:
                     id=current.id,
                     device_id=device_id,
                     camera_id=camera_id,
-                    device_name=self._coalesce_text(payload, "device_name", current.device_name),
+                    device_name=self._coalesce_text(heartbeat_payload, "device_name", current.device_name),
                     api_key_hash=current.api_key_hash,
                     status=status,
-                    ip_addr=self._coalesce_text(payload, "ip_addr", current.ip_addr),
-                    firmware_version=self._coalesce_text(payload, "firmware_version", current.firmware_version),
-                    model_version=self._coalesce_text(payload, "model_version", current.model_version),
-                    temperature=self._coalesce_float(payload, "temperature", current.temperature),
-                    cpu_load=self._coalesce_float(payload, "cpu_load", current.cpu_load),
-                    npu_load=self._coalesce_float(payload, "npu_load", current.npu_load),
-                    free_mem_mb=self._coalesce_int(payload, "free_mem_mb", current.free_mem_mb),
-                    camera_fps=self._coalesce_int(payload, "camera_fps", current.camera_fps),
+                    ip_addr=self._coalesce_text(heartbeat_payload, "ip_addr", current.ip_addr),
+                    firmware_version=self._coalesce_text(heartbeat_payload, "firmware_version", current.firmware_version),
+                    model_version=self._coalesce_text(heartbeat_payload, "model_version", current.model_version),
+                    temperature=self._coalesce_float(heartbeat_payload, "temperature", current.temperature),
+                    cpu_load=self._coalesce_float(heartbeat_payload, "cpu_load", current.cpu_load),
+                    npu_load=self._coalesce_float(heartbeat_payload, "npu_load", current.npu_load),
+                    free_mem_mb=self._coalesce_int(heartbeat_payload, "free_mem_mb", current.free_mem_mb),
+                    camera_fps=self._coalesce_int(heartbeat_payload, "camera_fps", current.camera_fps),
                     last_seen=last_seen,
                     created_at=current.created_at,
                     updated_at=now,
@@ -394,3 +402,98 @@ class PerceptionService:
             return current
         value = self._to_int(payload.get(key))
         return current if value is None else value
+
+    def _normalize_event_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(payload)
+        schema_version = self._as_optional_text(normalized.get("schema_version"))
+        if not schema_version:
+            return normalized
+        if schema_version != self._EVENT_SCHEMA_VERSION:
+            raise ValueError(
+                f"Unsupported event schema_version: {schema_version} (expected {self._EVENT_SCHEMA_VERSION})"
+            )
+
+        self._require_payload_field(normalized, "event_id", "event payload")
+        self._require_payload_field(normalized, "device_id", "event payload")
+        self._require_payload_field(normalized, "camera_id", "event payload")
+        self._require_payload_field(normalized, "seq_no", "event payload")
+        self._require_payload_field(normalized, "captured_at", "event payload")
+        self._require_payload_field(normalized, "sent_at", "event payload")
+        self._require_payload_field(normalized, "event_type", "event payload")
+        self._require_payload_field(normalized, "objects", "event payload")
+
+        seq_no = self._to_int(normalized.get("seq_no"))
+        if seq_no is None or seq_no < 0:
+            raise ValueError("event payload seq_no must be an integer >= 0")
+        objects = normalized.get("objects")
+        if not isinstance(objects, list):
+            raise ValueError("event payload objects must be a list")
+
+        if not self._as_optional_text(normalized.get("observed_at")):
+            normalized["observed_at"] = self._as_optional_text(normalized.get("captured_at"))
+        if "raw_detections" not in normalized:
+            normalized["raw_detections"] = objects
+        if self._to_int(normalized.get("importance")) is None:
+            normalized["importance"] = 3
+        if not self._as_optional_text(normalized.get("summary")):
+            normalized["summary"] = self._as_optional_text(normalized.get("event_type")) or "edge_event"
+
+        if objects and isinstance(objects[0], dict):
+            primary = objects[0]
+            if not self._as_optional_text(normalized.get("object_name")):
+                normalized["object_name"] = self._as_optional_text(primary.get("object_name")) or "scene"
+            if not self._as_optional_text(normalized.get("object_class")):
+                normalized["object_class"] = self._as_optional_text(primary.get("object_class")) or "scene"
+            if not self._as_optional_text(normalized.get("track_id")):
+                normalized["track_id"] = self._as_optional_text(primary.get("track_id"))
+            if self._to_float(normalized.get("confidence")) is None:
+                confidence = self._to_float(primary.get("confidence"))
+                if confidence is not None:
+                    normalized["confidence"] = confidence
+            if not self._as_optional_text(normalized.get("zone_id")):
+                normalized["zone_id"] = self._as_optional_text(primary.get("zone_id"))
+
+        return normalized
+
+    def _normalize_heartbeat_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
+        normalized = dict(payload)
+        if "status" not in normalized and isinstance(normalized.get("online"), bool):
+            normalized["status"] = "online" if normalized["online"] else "offline"
+        if "last_seen" not in normalized and self._as_optional_text(normalized.get("sent_at")):
+            normalized["last_seen"] = self._as_optional_text(normalized.get("sent_at"))
+
+        schema_version = self._as_optional_text(normalized.get("schema_version"))
+        if not schema_version:
+            return normalized
+        if schema_version != self._HEARTBEAT_SCHEMA_VERSION:
+            raise ValueError(
+                f"Unsupported heartbeat schema_version: {schema_version} (expected {self._HEARTBEAT_SCHEMA_VERSION})"
+            )
+
+        self._require_payload_field(normalized, "device_id", "heartbeat payload")
+        self._require_payload_field(normalized, "online", "heartbeat payload")
+        self._require_payload_field(normalized, "last_capture_ok", "heartbeat payload")
+        self._require_payload_field(normalized, "last_upload_ok", "heartbeat payload")
+        self._require_payload_field(normalized, "sent_at", "heartbeat payload")
+
+        if not isinstance(normalized.get("online"), bool):
+            raise ValueError("heartbeat payload online must be boolean")
+        if not isinstance(normalized.get("last_capture_ok"), bool):
+            raise ValueError("heartbeat payload last_capture_ok must be boolean")
+        if not isinstance(normalized.get("last_upload_ok"), bool):
+            raise ValueError("heartbeat payload last_upload_ok must be boolean")
+
+        if "status" not in normalized:
+            normalized["status"] = "online" if normalized["online"] else "offline"
+        if "last_seen" not in normalized:
+            normalized["last_seen"] = normalized["sent_at"]
+        return normalized
+
+    def _require_payload_field(self, payload: dict[str, Any], field: str, context: str) -> None:
+        if field not in payload:
+            raise ValueError(f"{context} missing required field: {field}")
+        value = payload.get(field)
+        if value is None:
+            raise ValueError(f"{context} field {field} cannot be null")
+        if isinstance(value, str) and not value.strip():
+            raise ValueError(f"{context} field {field} cannot be empty")

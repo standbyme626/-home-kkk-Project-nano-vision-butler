@@ -19,6 +19,8 @@ from edge_device.health.heartbeat import HeartbeatBuilder
 from edge_device.inference.detector import LightweightDetector
 from edge_device.tracking.tracker import LightweightTracker
 
+COMMAND_RESPONSE_SCHEMA_VERSION = "edge.command_response.v1"
+
 
 class BackendClientProtocol(Protocol):
     def post_event(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -65,6 +67,7 @@ class EdgeDeviceRuntime:
             clip_capacity=config.clip_buffer_size,
         )
         self.heartbeat_builder = heartbeat_builder or HeartbeatBuilder(model_version=self.detector.model_version)
+        self._event_seq_no = 0
 
     def run_once(self, *, trace_id: str | None = None) -> dict[str, Any]:
         frame = self.camera.capture_latest_frame()
@@ -75,9 +78,11 @@ class EdgeDeviceRuntime:
         envelope = self.compressor.build_envelope(
             device_id=self.config.device_id,
             camera_id=self.config.camera_id,
+            seq_no=self._next_event_seq_no(),
             frame=frame,
             detections=detections,
             snapshot_uri=snapshot.uri,
+            model_version=self.detector.model_version,
             trace_id=trace_id,
         )
         backend_response = self.backend_client.post_event(envelope["payload"])
@@ -117,6 +122,7 @@ class EdgeDeviceRuntime:
         return {
             "ok": True,
             "type": "command_response",
+            "schema_version": COMMAND_RESPONSE_SCHEMA_VERSION,
             "summary": "Snapshot command completed",
             "data": {
                 "command": "take_snapshot",
@@ -143,6 +149,7 @@ class EdgeDeviceRuntime:
         return {
             "ok": True,
             "type": "command_response",
+            "schema_version": COMMAND_RESPONSE_SCHEMA_VERSION,
             "summary": "Recent clip command completed",
             "data": {
                 "command": "get_recent_clip",
@@ -205,6 +212,10 @@ class EdgeDeviceRuntime:
             uri=f"file://{output.resolve()}",
             source_snapshot_id=latest_snapshot.snapshot_id,
         )
+
+    def _next_event_seq_no(self) -> int:
+        self._event_seq_no += 1
+        return self._event_seq_no
 
 
 def load_config_from_env() -> EdgeDeviceConfig:

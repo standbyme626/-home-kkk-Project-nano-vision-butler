@@ -1,7 +1,13 @@
 {
+  "schema_version": "edge.heartbeat.v1",
   "device_id": "rk3566-dev-01",
   "camera_id": "cam-entry-01",
+  "online": true,
+  "sent_at": "2026-03-14T04:00:00Z",
+  "last_capture_ok": true,
+  "last_upload_ok": true,
   "status": "online",
+  "last_seen": "2026-03-14T04:00:00Z",
   "temperature": 43.2,
   "cpu_load": 0.38,
   "npu_load": 0.27,
@@ -9,4 +15,3 @@
   "camera_fps": 12,
   "trace_id": "trace-heartbeat-min-001"
 }
-

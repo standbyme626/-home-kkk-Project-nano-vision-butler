@@ -1,12 +1,30 @@
 {
+  "schema_version": "edge.event.v1",
+  "event_id": "evt-min-001",
   "device_id": "rk3566-dev-01",
   "camera_id": "cam-entry-01",
+  "seq_no": 1,
+  "captured_at": "2026-03-14T04:00:00Z",
+  "sent_at": "2026-03-14T04:00:00Z",
   "event_type": "security_alert",
+  "objects": [
+    {
+      "object_name": "person",
+      "object_class": "person",
+      "confidence": 0.97,
+      "bbox": [120, 80, 360, 600],
+      "zone_id": "entry_door",
+      "track_id": "trk-001"
+    }
+  ],
+  "model_version": "stub-detector-v1",
+  "compress_reason": "event_compressor_v1",
+  "signature": null,
   "object_name": "person",
   "zone_id": "entry_door",
   "confidence": 0.97,
   "importance": 5,
   "summary": "person detected near entry",
+  "observed_at": "2026-03-14T04:00:00Z",
   "trace_id": "trace-ingest-min-001"
 }
-

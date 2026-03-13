@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
+HEARTBEAT_SCHEMA_VERSION = "edge.heartbeat.v1"
+
 
 def utc_now_iso8601() -> str:
     return datetime.now(tz=timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -22,6 +24,8 @@ class RuntimeMetrics:
     npu_load: float | None = None
     free_mem_mb: int | None = None
     camera_fps: int | None = None
+    last_capture_ok: bool = True
+    last_upload_ok: bool = True
 
 
 class HeartbeatBuilder:
@@ -48,9 +52,12 @@ class HeartbeatBuilder:
     ) -> dict[str, object]:
         metrics = self._metrics_provider()
         payload: dict[str, object] = {
+            "schema_version": HEARTBEAT_SCHEMA_VERSION,
             "device_id": device_id,
             "camera_id": camera_id,
             "status": metrics.status,
+            "online": metrics.status != "offline",
+            "sent_at": utc_now_iso8601(),
             "last_seen": last_seen or utc_now_iso8601(),
             "firmware_version": self._firmware_version,
             "model_version": self._model_version,
@@ -60,6 +67,8 @@ class HeartbeatBuilder:
             "npu_load": metrics.npu_load,
             "free_mem_mb": metrics.free_mem_mb,
             "camera_fps": metrics.camera_fps,
+            "last_capture_ok": bool(metrics.last_capture_ok),
+            "last_upload_ok": bool(metrics.last_upload_ok),
         }
         if trace_id:
             payload["trace_id"] = trace_id

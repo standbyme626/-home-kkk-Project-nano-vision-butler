@@ -22,7 +22,7 @@
 - [x] Prompt11B-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）
 - [x] Prompt12 RK3566 前端最小正式实现
 - [x] Prompt12A RK3566 板级 bring-up 与基线测量（新增 baseline 脚本与报告模板，2026-03-14 自检通过）
-- [ ] Prompt12B 前端协议冻结（event/heartbeat/command）
+- [x] Prompt12B 前端协议冻结（event/heartbeat/command）（新增 protocol 文档、三份 schema、入站 schema_version 校验，2026-03-14 测试通过）
 - [ ] Prompt12C 真实采集层替换（V4L2/GStreamer）
 - [ ] Prompt12D 真实 Snapshot 落地（JPEG）
 - [ ] Prompt12E 命令闭环最小打通（替换后端 StubEdgeDeviceAdapter）
@@ -54,7 +54,7 @@
 - [x] T12-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）
 - [x] T13 RK3566 前端最小正式实现
 - [x] T13A 板级 bring-up 与基线测量（新增 baseline 脚本与报告模板，2026-03-14 自检通过）
-- [ ] T13B 前端协议冻结（event/heartbeat/command）
+- [x] T13B 前端协议冻结（event/heartbeat/command）（新增 protocol 文档、三份 schema、入站 schema_version 校验，2026-03-14 测试通过）
 - [ ] T13C 真实采集层替换（V4L2/GStreamer）
 - [ ] T13D 真实 Snapshot 落地（JPEG）
 - [ ] T13E 命令闭环最小打通（替换后端 StubEdgeDeviceAdapter）

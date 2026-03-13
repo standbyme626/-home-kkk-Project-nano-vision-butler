@@ -468,7 +468,7 @@
 ---
 
 ## T13B 前端协议冻结（event/heartbeat/command）
-状态：TODO
+状态：DONE（2026-03-14）
 优先级：P1
 依赖：T13A
 

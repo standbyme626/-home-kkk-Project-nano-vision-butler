@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-vision-butler/schemas/edge_event_envelope.schema.json",
+  "title": "Edge Event Envelope Payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "device_id",
+    "camera_id",
+    "seq_no",
+    "captured_at",
+    "sent_at",
+    "event_type",
+    "objects"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "edge.event.v1"
+    },
+    "event_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "camera_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seq_no": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "event_type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "zone_id": {
+      "type": ["string", "null"]
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["object_name", "object_class", "confidence", "bbox"],
+        "properties": {
+          "object_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "object_class": {
+            "type": "string",
+            "minLength": 1
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "zone_id": {
+            "type": ["string", "null"]
+          },
+          "track_id": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "snapshot_uri": {
+      "type": ["string", "null"]
+    },
+    "clip_uri": {
+      "type": ["string", "null"]
+    },
+    "model_version": {
+      "type": ["string", "null"]
+    },
+    "compress_reason": {
+      "type": ["string", "null"]
+    },
+    "signature": {
+      "type": ["string", "null"]
+    },
+    "trace_id": {
+      "type": ["string", "null"]
+    },
+    "observed_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "category": {
+      "type": ["string", "null"]
+    },
+    "importance": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "maximum": 5
+    },
+    "summary": {
+      "type": ["string", "null"]
+    },
+    "object_name": {
+      "type": ["string", "null"]
+    },
+    "object_class": {
+      "type": ["string", "null"]
+    },
+    "track_id": {
+      "type": ["string", "null"]
+    },
+    "confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "raw_detections": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

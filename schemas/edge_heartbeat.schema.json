@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nano-vision-butler/schemas/edge_heartbeat.schema.json",
+  "title": "Edge Heartbeat Payload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "device_id",
+    "online",
+    "sent_at",
+    "last_capture_ok",
+    "last_upload_ok"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "edge.heartbeat.v1"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "camera_id": {
+      "type": ["string", "null"]
+    },
+    "online": {
+      "type": "boolean"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_capture_ok": {
+      "type": "boolean"
+    },
+    "last_upload_ok": {
+      "type": "boolean"
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["online", "offline", "degraded", null]
+    },
+    "last_seen": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "temperature": {
+      "type": ["number", "null"]
+    },
+    "cpu_load": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "npu_load": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "free_mem_mb": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "camera_fps": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "firmware_version": {
+      "type": ["string", "null"]
+    },
+    "model_version": {
+      "type": ["string", "null"]
+    },
+    "ip_addr": {
+      "type": ["string", "null"]
+    },
+    "trace_id": {
+      "type": ["string", "null"]
+    }
+  }
+}
