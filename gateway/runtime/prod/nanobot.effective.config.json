@@ -1,0 +1,41 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "./gateway/nanobot_workspace/prod",
+      "model": "qwen3.5-flash",
+      "provider": "openai"
+    }
+  },
+  "channels": {
+    "sendProgress": true,
+    "sendToolHints": false,
+    "telegram": {
+      "enabled": true,
+      "token": "8528206918:AAH57ZjZArLz-dd9MAJzrs7-CqUkOoKiiBs",
+      "allowFrom": [
+        "7566115125"
+      ],
+      "replyToMessage": true
+    }
+  },
+  "providers": {
+    "custom": {
+      "apiBase": "",
+      "apiKey": ""
+    },
+    "openai": {
+      "apiBase": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "apiKey": "sk-358c49d734ed49f7a3ff6b39ea6b77a3"
+    }
+  },
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790
+  },
+  "tools": {
+    "restrictToWorkspace": false,
+    "defaultToolTimeoutSec": 60,
+    "maxConcurrentTools": 4,
+    "mcpServers": {}
+  }
+}

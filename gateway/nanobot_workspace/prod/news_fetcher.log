@@ -1,0 +1,191 @@
+[2026-03-14 01:13:38] ==================================================
+[2026-03-14 01:13:38] 开始新闻抓取任务
+[2026-03-14 01:13:38] 时间：2026-03-14 01:13:38 CST
+[2026-03-14 01:13:38] ==================================================
+[2026-03-14 01:13:38] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:13:39] 抓取失败：BBC News (国际) - 'str' object has no attribute 'isoformat'
+[2026-03-14 01:13:44] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:13:46] 抓取失败：NYT Top Stories - 'str' object has no attribute 'isoformat'
+[2026-03-14 01:13:51] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:13:52] 抓取失败：Al Jazeera - 'str' object has no attribute 'isoformat'
+[2026-03-14 01:13:57] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:13:59] 抓取失败：中国新闻网 - 即时新闻 - object has no attribute 'guid'
+[2026-03-14 01:14:04] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:14:06] 抓取失败：中国新闻网 - 时政 - object has no attribute 'guid'
+[2026-03-14 01:14:11] 正在抓取：中国新闻网 - 国际 (https://www.chinanews.com.cn/rss/world.xml)
+[2026-03-14 01:14:12] 抓取失败：中国新闻网 - 国际 - object has no attribute 'guid'
+[2026-03-14 01:14:17] 正在抓取：中国新闻网 - 财经 (https://www.chinanews.com.cn/rss/finance.xml)
+[2026-03-14 01:14:19] 抓取失败：中国新闻网 - 财经 - object has no attribute 'guid'
+[2026-03-14 01:14:24] 正在抓取：人民网 - 全部新闻 (http://www.people.com.cn/rss/ywkx.xml)
+[2026-03-14 01:14:25] 抓取失败：人民网 - 全部新闻 - object has no attribute 'summary'
+[2026-03-14 01:14:30] 正在抓取：新华网 - 全部 (http://www.xinhuanet.com/politics/news_politics.xml)
+[2026-03-14 01:14:32] 抓取失败：新华网 - 全部 - object has no attribute 'guid'
+[2026-03-14 01:14:37] 去重后剩余：0 条新闻
+[2026-03-14 01:14:37] 新闻数据已保存到：news_data.json
+[2026-03-14 01:14:37] 发送消息到 Telegram: 7566115125
+[2026-03-14 01:14:37] 消息内容：暂无新闻...
+[2026-03-14 01:14:37] ==================================================
+[2026-03-14 01:14:37] 新闻抓取任务完成
+[2026-03-14 01:14:37] ==================================================
+[2026-03-14 01:15:26] ==================================================
+[2026-03-14 01:15:26] 开始新闻抓取任务
+[2026-03-14 01:15:26] 时间：2026-03-14 01:15:26 CST
+[2026-03-14 01:15:26] ==================================================
+[2026-03-14 01:15:26] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:15:28] 抓取失败：BBC News (国际) - object has no attribute 'language'
+[2026-03-14 01:15:33] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:15:35] 抓取失败：NYT Top Stories - object has no attribute 'language'
+[2026-03-14 01:15:40] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:15:42] 抓取失败：Al Jazeera - object has no attribute 'language'
+[2026-03-14 01:15:47] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:15:48] 抓取失败：中国新闻网 - 即时新闻 - object has no attribute 'guid'
+[2026-03-14 01:15:53] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:15:55] 抓取失败：中国新闻网 - 时政 - object has no attribute 'guid'
+[2026-03-14 01:16:00] 正在抓取：中国新闻网 - 国际 (https://www.chinanews.com.cn/rss/world.xml)
+[2026-03-14 01:16:02] 抓取失败：中国新闻网 - 国际 - object has no attribute 'guid'
+[2026-03-14 01:16:07] 正在抓取：中国新闻网 - 财经 (https://www.chinanews.com.cn/rss/finance.xml)
+[2026-03-14 01:16:09] 抓取失败：中国新闻网 - 财经 - object has no attribute 'guid'
+[2026-03-14 01:16:14] 正在抓取：人民网 - 全部新闻 (http://www.people.com.cn/rss/ywkx.xml)
+[2026-03-14 01:16:15] 抓取失败：人民网 - 全部新闻 - object has no attribute 'summary'
+[2026-03-14 01:16:20] 正在抓取：新华网 - 全部 (http://www.xinhuanet.com/politics/news_politics.xml)
+[2026-03-14 01:16:23] 抓取失败：新华网 - 全部 - object has no attribute 'guid'
+[2026-03-14 01:16:28] 去重后剩余：0 条新闻
+[2026-03-14 01:16:28] 新闻数据已保存到：news_data.json
+[2026-03-14 01:16:28] 发送消息到 Telegram: 7566115125
+[2026-03-14 01:16:28] 消息内容：暂无新闻...
+[2026-03-14 01:16:28] ==================================================
+[2026-03-14 01:16:28] 新闻抓取任务完成
+[2026-03-14 01:16:28] ==================================================
+[2026-03-14 01:18:59] ==================================================
+[2026-03-14 01:18:59] 开始新闻抓取任务
+[2026-03-14 01:18:59] 时间：2026-03-14 01:18:59 CST
+[2026-03-14 01:18:59] ==================================================
+[2026-03-14 01:18:59] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:19:01] 成功抓取 0 条新闻
+[2026-03-14 01:19:06] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:19:07] 成功抓取 0 条新闻
+[2026-03-14 01:19:12] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:19:13] 成功抓取 0 条新闻
+[2026-03-14 01:19:18] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:19:20] 成功抓取 0 条新闻
+[2026-03-14 01:19:25] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:19:27] 成功抓取 0 条新闻
+[2026-03-14 01:19:32] 正在抓取：中国新闻网 - 国际 (https://www.chinanews.com.cn/rss/world.xml)
+[2026-03-14 01:19:33] 成功抓取 0 条新闻
+[2026-03-14 01:19:38] 正在抓取：中国新闻网 - 财经 (https://www.chinanews.com.cn/rss/finance.xml)
+[2026-03-14 01:19:40] 成功抓取 0 条新闻
+[2026-03-14 01:19:45] 正在抓取：人民网 - 全部新闻 (http://www.people.com.cn/rss/ywkx.xml)
+[2026-03-14 01:19:46] 成功抓取 0 条新闻
+[2026-03-14 01:19:51] 正在抓取：新华网 - 全部 (http://www.xinhuanet.com/politics/news_politics.xml)
+[2026-03-14 01:19:53] 成功抓取 0 条新闻
+[2026-03-14 01:19:58] 去重后剩余：0 条新闻
+[2026-03-14 01:19:58] 新闻数据已保存到：news_data.json
+[2026-03-14 01:19:58] 发送消息到 Telegram: 7566115125
+[2026-03-14 01:19:58] 消息内容：暂无新闻...
+[2026-03-14 01:19:58] ==================================================
+[2026-03-14 01:19:58] 新闻抓取任务完成
+[2026-03-14 01:19:58] ==================================================
+[2026-03-14 01:29:35] ==================================================
+[2026-03-14 01:29:35] 开始新闻抓取任务
+[2026-03-14 01:29:35] 时间：2026-03-14 01:29:35 CST
+[2026-03-14 01:29:35] ==================================================
+[2026-03-14 01:29:35] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:29:36] 成功抓取 40 条新闻
+[2026-03-14 01:29:36] 抓取失败：BBC News (国际) - object has no attribute 'language'
+[2026-03-14 01:29:41] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:29:43] 成功抓取 25 条新闻
+[2026-03-14 01:29:43] 抓取失败：NYT Top Stories - object has no attribute 'language'
+[2026-03-14 01:29:48] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:29:49] 成功抓取 25 条新闻
+[2026-03-14 01:29:49] 抓取失败：Al Jazeera - object has no attribute 'language'
+[2026-03-14 01:29:54] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:29:56] 成功抓取 30 条新闻
+[2026-03-14 01:29:56] 抓取失败：中国新闻网 - 即时新闻 - object has no attribute 'language'
+[2026-03-14 01:30:01] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:30:03] 成功抓取 30 条新闻
+[2026-03-14 01:30:03] 抓取失败：中国新闻网 - 时政 - object has no attribute 'language'
+[2026-03-14 01:30:08] 正在抓取：中国新闻网 - 国际 (https://www.chinanews.com.cn/rss/world.xml)
+[2026-03-14 01:30:10] 成功抓取 30 条新闻
+[2026-03-14 01:30:10] 抓取失败：中国新闻网 - 国际 - object has no attribute 'language'
+[2026-03-14 01:30:15] 正在抓取：中国新闻网 - 财经 (https://www.chinanews.com.cn/rss/finance.xml)
+[2026-03-14 01:30:17] 成功抓取 30 条新闻
+[2026-03-14 01:30:17] 抓取失败：中国新闻网 - 财经 - object has no attribute 'language'
+[2026-03-14 01:30:22] 正在抓取：人民网 - 全部新闻 (http://www.people.com.cn/rss/ywkx.xml)
+[2026-03-14 01:30:24] 成功抓取 50 条新闻
+[2026-03-14 01:30:24] 抓取失败：人民网 - 全部新闻 - object has no attribute 'language'
+[2026-03-14 01:30:29] 正在抓取：新华网 - 全部 (http://www.xinhuanet.com/politics/news_politics.xml)
+[2026-03-14 01:30:31] 成功抓取 300 条新闻
+[2026-03-14 01:30:31] 抓取失败：新华网 - 全部 - cannot access local variable 'datetime' where it is not associated with a value
+[2026-03-14 01:30:36] 去重后剩余：0 条新闻
+[2026-03-14 01:30:36] 新闻数据已保存到：news_data.json
+[2026-03-14 01:30:36] 发送消息到 Telegram: 7566115125
+[2026-03-14 01:30:36] 消息内容：暂无新闻...
+[2026-03-14 01:30:36] ==================================================
+[2026-03-14 01:30:36] 新闻抓取任务完成
+[2026-03-14 01:30:36] ==================================================
+[2026-03-14 01:32:17] ==================================================
+[2026-03-14 01:32:17] 开始新闻抓取任务
+[2026-03-14 01:32:17] 时间：2026-03-14 01:32:17 CST
+[2026-03-14 01:32:17] ==================================================
+[2026-03-14 01:32:17] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:32:20] 成功抓取 40 条新闻
+[2026-03-14 01:32:20] 抓取失败：BBC News (国际) - object has no attribute 'language'
+[2026-03-14 01:32:25] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:32:26] 成功抓取 25 条新闻
+[2026-03-14 01:32:26] 抓取失败：NYT Top Stories - object has no attribute 'language'
+[2026-03-14 01:32:31] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:32:33] 成功抓取 25 条新闻
+[2026-03-14 01:32:33] 抓取失败：Al Jazeera - object has no attribute 'language'
+[2026-03-14 01:32:38] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:32:39] 成功抓取 30 条新闻
+[2026-03-14 01:32:39] 抓取失败：中国新闻网 - 即时新闻 - object has no attribute 'language'
+[2026-03-14 01:32:44] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:32:46] 成功抓取 30 条新闻
+[2026-03-14 01:32:46] 抓取失败：中国新闻网 - 时政 - object has no attribute 'language'
+[2026-03-14 01:32:51] 正在抓取：中国新闻网 - 国际 (https://www.chinanews.com.cn/rss/world.xml)
+[2026-03-14 01:32:52] 成功抓取 30 条新闻
+[2026-03-14 01:32:52] 抓取失败：中国新闻网 - 国际 - object has no attribute 'language'
+[2026-03-14 01:32:57] 正在抓取：中国新闻网 - 财经 (https://www.chinanews.com.cn/rss/finance.xml)
+[2026-03-14 01:32:59] 成功抓取 30 条新闻
+[2026-03-14 01:32:59] 抓取失败：中国新闻网 - 财经 - object has no attribute 'language'
+[2026-03-14 01:33:04] 正在抓取：人民网 - 全部新闻 (http://www.people.com.cn/rss/ywkx.xml)
+[2026-03-14 01:33:05] 成功抓取 50 条新闻
+[2026-03-14 01:33:05] 抓取失败：人民网 - 全部新闻 - object has no attribute 'language'
+[2026-03-14 01:33:10] 正在抓取：新华网 - 全部 (http://www.xinhuanet.com/politics/news_politics.xml)
+[2026-03-14 01:33:12] 成功抓取 300 条新闻
+[2026-03-14 01:33:12] 抓取失败：新华网 - 全部 - cannot access local variable 'datetime' where it is not associated with a value
+[2026-03-14 01:33:17] 去重后剩余：0 条新闻
+[2026-03-14 01:33:17] 新闻数据已保存到：news_data.json
+[2026-03-14 01:33:17] 发送消息到 Telegram: 7566115125
+[2026-03-14 01:33:17] 消息内容：暂无新闻...
+[2026-03-14 01:33:17] ==================================================
+[2026-03-14 01:33:17] 新闻抓取任务完成
+[2026-03-14 01:33:17] ==================================================
+[2026-03-14 01:36:31] ==================================================
+[2026-03-14 01:36:31] 开始新闻抓取任务
+[2026-03-14 01:36:31] 时间：2026-03-14 01:36:31 CST
+[2026-03-14 01:36:31] ==================================================
+[2026-03-14 01:36:31] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:36:32] 成功抓取 40 条新闻
+[2026-03-14 01:36:37] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:36:39] 成功抓取 25 条新闻
+[2026-03-14 01:36:44] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:36:45] 成功抓取 25 条新闻
+[2026-03-14 01:36:50] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:36:52] 成功抓取 30 条新闻
+[2026-03-14 01:36:57] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:36:59] 成功抓取 30 条新闻
+[2026-03-14 01:43:33] ==================================================
+[2026-03-14 01:43:33] 开始新闻抓取任务
+[2026-03-14 01:43:33] 时间：2026-03-14 01:43:33 CST
+[2026-03-14 01:43:33] ==================================================
+[2026-03-14 01:43:33] 正在抓取：BBC News (国际) (https://feeds.bbci.co.uk/news/rss.xml?edition=int)
+[2026-03-14 01:43:35] 成功抓取 40 条新闻
+[2026-03-14 01:43:40] 正在抓取：NYT Top Stories (https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)
+[2026-03-14 01:43:42] 成功抓取 25 条新闻
+[2026-03-14 01:43:47] 正在抓取：Al Jazeera (https://www.aljazeera.com/xml/rss/all.xml)
+[2026-03-14 01:43:48] 成功抓取 25 条新闻
+[2026-03-14 01:43:53] 正在抓取：中国新闻网 - 即时新闻 (https://www.chinanews.com.cn/rss/scroll-news.xml)
+[2026-03-14 01:43:55] 成功抓取 30 条新闻
+[2026-03-14 01:44:00] 正在抓取：中国新闻网 - 时政 (https://www.chinanews.com.cn/rss/china.xml)
+[2026-03-14 01:44:02] 成功抓取 30 条新闻

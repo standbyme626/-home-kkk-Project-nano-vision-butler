@@ -1,0 +1,10 @@
+[INFO] Starting backend service
+[INFO] Root      : /home/kkk/Project/nano-vision-butler
+[INFO] Host      : 0.0.0.0
+[INFO] Port      : 8000
+[INFO] Reload    : 0
+[INFO] Config dir: /home/kkk/Project/nano-vision-butler/config
+INFO:     Started server process [19968]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
