@@ -39,11 +39,23 @@ echo "[INFO] Runtime dir    : ${NANOBOT_RUNTIME_DIR}"
 echo "[INFO] Binary         : ${NANOBOT_BIN}"
 echo "[INFO] Dry run        : ${NANOBOT_DRY_RUN}"
 
-CMD=(
-  "${NANOBOT_BIN}"
-  "--config" "${NANOBOT_CONFIG}"
-  "--workspace" "${NANOBOT_WORKSPACE}"
-)
+# nanobot CLI compatibility:
+# - new style: nanobot gateway --config <file> --workspace <dir>
+# - legacy style: nanobot --config <file> --workspace <dir>
+if "${NANOBOT_BIN}" gateway --help 2>/dev/null | grep -q -- '--config'; then
+  CMD=(
+    "${NANOBOT_BIN}"
+    "gateway"
+    "--config" "${NANOBOT_CONFIG}"
+    "--workspace" "${NANOBOT_WORKSPACE}"
+  )
+else
+  CMD=(
+    "${NANOBOT_BIN}"
+    "--config" "${NANOBOT_CONFIG}"
+    "--workspace" "${NANOBOT_WORKSPACE}"
+  )
+fi
 
 if [[ "${NANOBOT_DRY_RUN}" == "1" ]]; then
   printf "[DRY-RUN] %q " "${CMD[@]}"
