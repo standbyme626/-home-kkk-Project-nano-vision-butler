@@ -336,6 +336,28 @@
 
 ---
 
+## T11-Hotfix 模型与密钥切换指引 + 默认模型更新
+状态：DONE
+优先级：P1
+依赖：T11
+
+### 目标
+将运行默认模型切换到 `qwen3.5-35b-a3b`，并在 README 明确说明模型与密钥的修改位置和步骤。
+
+### 输出
+- `config/runtime/nanobot.config.json`（prod 模型更新）
+- `config/runtime/nanobot.dev.config.json`（dev 模型更新）
+- `scripts/switch_ollama_ctx.sh`（dashscope 档位默认模型更新）
+- `scripts/apply_runtime_config.sh`（runtime 渲染默认模型更新）
+- `README.md`（新增模型/密钥更换说明）
+
+### 验收
+- prod/dev runtime 默认模型均为 `qwen3.5-35b-a3b`
+- README 可直接指引用户定位并替换 `model/apiBase/apiKey`
+- 相关脚本切换/渲染默认值不再回落到旧模型
+
+---
+
 ## T12 Telegram 正式交互链路
 状态：DONE
 优先级：P1

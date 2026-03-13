@@ -14,7 +14,7 @@ Usage:
   ./scripts/switch_ollama_ctx.sh 64k [--restart]
 
 Behavior:
-  - dashscope -> provider openai + model qwen3.5-flash
+  - dashscope -> provider openai + model qwen3.5-35b-a3b
   - 32k -> model qwen3.5:4b-32k
   - 64k -> model qwen3.5:4b-64k
   - updates both runtime configs (prod/dev)
@@ -27,7 +27,7 @@ RESTART="${2:-}"
 
 case "${MODE}" in
   dashscope)
-    TARGET_MODEL="qwen3.5-flash"
+    TARGET_MODEL="qwen3.5-35b-a3b"
     ;;
   32k)
     TARGET_MODEL="qwen3.5:4b-32k"

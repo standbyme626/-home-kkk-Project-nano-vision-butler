@@ -16,6 +16,7 @@
 - [x] Prompt09 实现 MCP Server 层
 - [x] Prompt10 实现 Skill 层
 - [x] Prompt11 nanobot 集成与正式宿主配置
+- [x] Prompt11-Hotfix 模型切换至 qwen3.5-35b-a3b 并补充模型/密钥更换说明
 - [x] Prompt11B Telegram 正式交互链路（补充）
 - [x] Prompt11B-Hotfix Telegram 重复消费防护（单 token 单实例）
 - [x] Prompt11B-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）
@@ -38,6 +39,7 @@
 - [x] T9 MCP Server 层
 - [x] T10 Skill 层
 - [x] T11 nanobot 集成
+- [x] T11-Hotfix 模型切换至 qwen3.5-35b-a3b 并补充模型/密钥更换说明
 - [x] T12 Telegram 正式交互链路
 - [x] T12-Hotfix Telegram 重复消费防护（单 token 单实例）
 - [x] T12-Hotfix MCP kwargs 参数兼容（避免 camera_id/device_id 丢失）

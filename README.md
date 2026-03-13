@@ -48,9 +48,26 @@
 - 建议 `TELEGRAM_BOT_TOKEN_DEV` 与 `TELEGRAM_BOT_TOKEN` 使用不同 token。
 - 若出现整段重复，先执行：`./scripts/stack_ctl.sh stop && pkill -f "nanobot.*gateway" || true`，再只启动一个实例。
 
-## Ollama 上下文档位
-- 默认模型：`qwen3.5:4b-32k`（远端 Ollama）
-- 切回阿里百炼：`./scripts/switch_ollama_ctx.sh dashscope --restart`
+## 模型与密钥更换（推荐）
+- 当前实际生效配置文件：
+  - `config/runtime/nanobot.config.json`（prod）
+  - `config/runtime/nanobot.dev.config.json`（dev）
+- 需要修改的字段：
+  - `agents.defaults.model`：例如 `qwen3.5-35b-a3b`
+  - `agents.defaults.provider`：DashScope 兼容接口用 `openai`
+  - `providers.openai.apiBase`：`https://dashscope.aliyuncs.com/compatible-mode/v1`
+  - `providers.openai.apiKey`：替换为你自己的 key
+- 修改后重启：
+  - `./scripts/stack_ctl.sh restart`
+
+## 通过模板变量生成 runtime 配置（可选）
+- 模型环境变量：`QWEN_MODEL_NAME` / `QWEN_MODEL_NAME_DEV`
+- 密钥环境变量：`QWEN_API_KEY` / `QWEN_API_KEY_DEV`
+- 示例：
+  - `QWEN_MODEL_NAME=qwen3.5-35b-a3b QWEN_API_KEY=你的key ./scripts/apply_runtime_config.sh`
+
+## Ollama 档位切换（可选）
+- 切回阿里百炼（当前默认模型 `qwen3.5-35b-a3b`）：`./scripts/switch_ollama_ctx.sh dashscope --restart`
 - 切到 64k：`./scripts/switch_ollama_ctx.sh 64k --restart`
 - 切回 32k：`./scripts/switch_ollama_ctx.sh 32k --restart`
 - 查看当前档位：`./scripts/switch_ollama_ctx.sh status`
