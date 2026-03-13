@@ -15,11 +15,14 @@ fi
 
 if [[ "${NANOBOT_INSTANCE}" == "prod" ]]; then
   DEFAULT_CONFIG="${ROOT_DIR}/config/nanobot.config.json"
+  DEFAULT_PORT="18790"
 else
   DEFAULT_CONFIG="${ROOT_DIR}/config/nanobot.dev.config.json"
+  DEFAULT_PORT="18791"
 fi
 
 : "${NANOBOT_CONFIG:=${DEFAULT_CONFIG}}"
+: "${NANOBOT_PORT:=${DEFAULT_PORT}}"
 : "${NANOBOT_WORKSPACE:=${ROOT_DIR}/gateway/nanobot_workspace/${NANOBOT_INSTANCE}}"
 : "${NANOBOT_RUNTIME_DIR:=${ROOT_DIR}/gateway/runtime/${NANOBOT_INSTANCE}}"
 
@@ -34,6 +37,7 @@ fi
 echo "[INFO] Starting nanobot gateway"
 echo "[INFO] Instance       : ${NANOBOT_INSTANCE}"
 echo "[INFO] Config         : ${NANOBOT_CONFIG}"
+echo "[INFO] Port           : ${NANOBOT_PORT}"
 echo "[INFO] Workspace      : ${NANOBOT_WORKSPACE}"
 echo "[INFO] Runtime dir    : ${NANOBOT_RUNTIME_DIR}"
 echo "[INFO] Binary         : ${NANOBOT_BIN}"
@@ -46,6 +50,7 @@ if "${NANOBOT_BIN}" gateway --help 2>/dev/null | grep -q -- '--config'; then
   CMD=(
     "${NANOBOT_BIN}"
     "gateway"
+    "--port" "${NANOBOT_PORT}"
     "--config" "${NANOBOT_CONFIG}"
     "--workspace" "${NANOBOT_WORKSPACE}"
   )

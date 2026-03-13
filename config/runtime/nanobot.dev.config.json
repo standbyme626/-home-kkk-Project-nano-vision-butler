@@ -3,7 +3,7 @@
     "defaults": {
       "workspace": "./gateway/nanobot_workspace/dev",
       "model": "qwen3.5-flash",
-      "provider": "qwen_openai_compat_dev"
+      "provider": "openai"
     }
   },
   "channels": {
@@ -19,7 +19,7 @@
     }
   },
   "providers": {
-    "qwen_openai_compat_dev": {
+    "openai": {
       "apiBase": "https://dashscope.aliyuncs.com/compatible-mode/v1",
       "apiKey": "sk-e2430b25aa8646e28eacf09d2b1d3b50"
     }
@@ -27,11 +27,6 @@
   "gateway": {
     "host": "127.0.0.1",
     "port": 18791
-  },
-  "runtime": {
-    "dataDir": "./gateway/runtime/dev",
-    "logsDir": "./gateway/runtime/dev/logs",
-    "tempDir": "./gateway/runtime/dev/tmp"
   },
   "tools": {
     "restrictToWorkspace": false,

@@ -3,7 +3,7 @@
     "defaults": {
       "workspace": "./gateway/nanobot_workspace/prod",
       "model": "__SET_QWEN_MODEL_NAME__",
-      "provider": "qwen_openai_compat"
+      "provider": "openai"
     }
   },
   "channels": {
@@ -19,7 +19,7 @@
     }
   },
   "providers": {
-    "qwen_openai_compat": {
+    "openai": {
       "apiBase": "__SET_QWEN_API_BASE__",
       "apiKey": "__SET_QWEN_API_KEY__"
     }
@@ -27,11 +27,6 @@
   "gateway": {
     "host": "0.0.0.0",
     "port": 18790
-  },
-  "runtime": {
-    "dataDir": "./gateway/runtime/prod",
-    "logsDir": "./gateway/runtime/prod/logs",
-    "tempDir": "./gateway/runtime/prod/tmp"
   },
   "tools": {
     "restrictToWorkspace": false,
