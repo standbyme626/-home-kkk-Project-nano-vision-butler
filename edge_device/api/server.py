@@ -13,7 +13,7 @@ from uuid import uuid4
 
 from edge_device.api.backend_client import BackendApiClient
 from edge_device.cache.ring_buffer import ClipItem, MediaRingBuffer, SnapshotItem
-from edge_device.capture.camera import CapturedFrame, StubCamera, utc_now_iso8601
+from edge_device.capture.camera import CameraProtocol, CapturedFrame, create_camera, utc_now_iso8601
 from edge_device.compression.event_compressor import EventCompressor
 from edge_device.health.heartbeat import HeartbeatBuilder
 from edge_device.inference.detector import LightweightDetector
@@ -35,6 +35,14 @@ class EdgeDeviceConfig:
     device_id: str
     camera_id: str
     backend_base_url: str
+    capture_source: str | None = None
+    capture_width: int = 1280
+    capture_height: int = 720
+    capture_fps: int = 25
+    capture_pixel_format: str = "MJPG"
+    capture_backend: str = "auto"
+    capture_retry_count: int = 3
+    capture_retry_delay_sec: float = 1.0
     snapshot_dir: Path = field(default_factory=lambda: Path("./data/edge_device/snapshots"))
     clip_dir: Path = field(default_factory=lambda: Path("./data/edge_device/clips"))
     snapshot_buffer_size: int = 32
@@ -49,7 +57,7 @@ class EdgeDeviceRuntime:
         *,
         config: EdgeDeviceConfig,
         backend_client: BackendClientProtocol | None = None,
-        camera: StubCamera | None = None,
+        camera: CameraProtocol | None = None,
         detector: LightweightDetector | None = None,
         tracker: LightweightTracker | None = None,
         compressor: EventCompressor | None = None,
@@ -58,7 +66,16 @@ class EdgeDeviceRuntime:
     ) -> None:
         self.config = config
         self.backend_client = backend_client or BackendApiClient(base_url=config.backend_base_url)
-        self.camera = camera or StubCamera(source=config.camera_id)
+        self.camera = camera or create_camera(
+            source=config.capture_source,
+            width=config.capture_width,
+            height=config.capture_height,
+            fps=config.capture_fps,
+            pixel_format=config.capture_pixel_format,
+            backend=config.capture_backend,
+            retry_count=config.capture_retry_count,
+            retry_delay_sec=config.capture_retry_delay_sec,
+        )
         self.detector = detector or LightweightDetector()
         self.tracker = tracker or LightweightTracker()
         self.compressor = compressor or EventCompressor()
@@ -219,15 +236,38 @@ class EdgeDeviceRuntime:
 
 
 def load_config_from_env() -> EdgeDeviceConfig:
+    capture_resolution = os.getenv("EDGE_CAPTURE_RESOLUTION", "1280x720")
+    capture_width, capture_height = _parse_resolution(capture_resolution)
     return EdgeDeviceConfig(
         device_id=os.getenv("EDGE_DEVICE_ID", "rk3566-dev-01"),
         camera_id=os.getenv("EDGE_CAMERA_ID", "cam-entry-01"),
         backend_base_url=os.getenv("EDGE_BACKEND_BASE_URL", "http://127.0.0.1:8000"),
+        capture_source=(os.getenv("EDGE_CAPTURE_SOURCE", "") or None),
+        capture_width=int(os.getenv("EDGE_CAPTURE_WIDTH", str(capture_width))),
+        capture_height=int(os.getenv("EDGE_CAPTURE_HEIGHT", str(capture_height))),
+        capture_fps=int(os.getenv("EDGE_CAPTURE_FPS", "25")),
+        capture_pixel_format=os.getenv("EDGE_CAPTURE_PIXEL_FORMAT", "MJPG"),
+        capture_backend=os.getenv("EDGE_CAPTURE_BACKEND", "auto"),
+        capture_retry_count=int(os.getenv("EDGE_CAPTURE_RETRY_COUNT", "3")),
+        capture_retry_delay_sec=float(os.getenv("EDGE_CAPTURE_RETRY_DELAY_SEC", "1.0")),
         snapshot_dir=Path(os.getenv("EDGE_SNAPSHOT_DIR", "./data/edge_device/snapshots")),
         clip_dir=Path(os.getenv("EDGE_CLIP_DIR", "./data/edge_device/clips")),
         snapshot_buffer_size=int(os.getenv("EDGE_SNAPSHOT_BUFFER_SIZE", "32")),
         clip_buffer_size=int(os.getenv("EDGE_CLIP_BUFFER_SIZE", "16")),
     )
+
+
+def _parse_resolution(value: str) -> tuple[int, int]:
+    normalized = (value or "").strip().lower()
+    if "x" not in normalized:
+        return 1280, 720
+    left, right = normalized.split("x", 1)
+    try:
+        width = max(int(left), 1)
+        height = max(int(right), 1)
+        return width, height
+    except ValueError:
+        return 1280, 720
 
 
 def main() -> None:

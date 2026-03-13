@@ -1,7 +1,8 @@
 # EDGE_DEVICE
 
 ## 模块职责划分
-- `edge_device/capture/camera.py`：相机采集接口与 `StubCamera`，后续可替换为 V4L2/GStreamer。
+- `edge_device/capture/camera.py`：相机采集接口、工厂与 `StubCamera` 回退策略。
+- `edge_device/capture/v4l2_camera.py`：V4L2/GStreamer/FFmpeg 真实采集实现（带重试与错误可观测）。
 - `edge_device/inference/detector.py`：轻量检测接口 `LightweightDetector`，后续接入 RKNN。
 - `edge_device/tracking/tracker.py`：`track_id` 分配与轻量跟踪占位。
 - `edge_device/compression/event_compressor.py`：把检测结果压缩为统一 event envelope，并输出后端可消费 payload。
@@ -22,6 +23,12 @@ python3 -m edge_device.api.server get-recent-clip --duration-sec 6
 - `EDGE_DEVICE_ID`：默认 `rk3566-dev-01`
 - `EDGE_CAMERA_ID`：默认 `cam-entry-01`
 - `EDGE_BACKEND_BASE_URL`：后端地址（例如 `http://192.168.1.5:8000`）
+- `EDGE_CAPTURE_SOURCE`：采集源（例如 `/dev/video0`；空值则回退 stub）
+- `EDGE_CAPTURE_RESOLUTION`：采集分辨率（例如 `1280x720`）
+- `EDGE_CAPTURE_FPS`：采集帧率
+- `EDGE_CAPTURE_PIXEL_FORMAT`：像素格式（例如 `MJPG` / `YUYV` / `NV12`）
+- `EDGE_CAPTURE_BACKEND`：`auto | v4l2 | gstreamer | ffmpeg | stub`
+- `EDGE_CAPTURE_RETRY_COUNT` / `EDGE_CAPTURE_RETRY_DELAY_SEC`：失败重试参数
 - `EDGE_SNAPSHOT_DIR` / `EDGE_CLIP_DIR`：本地缓存目录
 
 ## Event Envelope 示例
@@ -83,7 +90,7 @@ python3 -m edge_device.api.server get-recent-clip --duration-sec 6
 ```
 
 ## 后续替换点（真实硬件接入）
-- `StubCamera.capture_latest_frame`：替换为真实摄像头帧抓取（V4L2/GStreamer）。
+- 采集层已支持 `V4L2/GStreamer/FFmpeg`；通过 `EDGE_CAPTURE_*` 参数切换与调优。
 - `LightweightDetector.detect`：替换为 RKNN 推理调用。
 - `LightweightTracker.assign_tracks`：替换为真实多目标跟踪器（如 ByteTrack 简化版）。
 - `_store_snapshot/_assemble_clip`：替换为真实 JPEG 编码和短视频封装流程。
