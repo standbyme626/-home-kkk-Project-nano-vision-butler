@@ -16,6 +16,11 @@ else
 fi
 GATEWAY_PORT="${NANOBOT_PORT:-${GATEWAY_PORT_DEFAULT}}"
 NANOBOT_AUTO_DISABLE_MCP="${NANOBOT_AUTO_DISABLE_MCP:-0}"
+EDGE_ENABLED="${EDGE_ENABLED:-1}"
+EDGE_ACTION="${EDGE_ACTION:-heartbeat}"
+EDGE_LOOP="${EDGE_LOOP:-1}"
+EDGE_INTERVAL_SEC="${EDGE_INTERVAL_SEC:-15}"
+EDGE_BACKEND_BASE_URL="${EDGE_BACKEND_BASE_URL:-http://127.0.0.1:${BACKEND_PORT}}"
 
 mkdir -p "${PID_DIR}" "${LOG_DIR}"
 
@@ -145,6 +150,10 @@ start_gateway() {
     echo "[INFO] gateway already running (pid=${pid})"
     return 0
   fi
+  if pgrep -f "nanobot.*gateway" >/dev/null 2>&1; then
+    echo "[WARN] gateway process already running (external), skip start"
+    return 0
+  fi
   if is_port_open "${GATEWAY_PORT}"; then
     echo "[WARN] gateway port ${GATEWAY_PORT} already in use (external process), skip start"
     return 0
@@ -175,6 +184,53 @@ start_gateway() {
   fi
 
   echo "[ERROR] gateway process exited during startup"
+  tail -n 80 "$(log_file "${name}")" || true
+  return 1
+}
+
+start_edge() {
+  local name="edge"
+  local pid
+  pid="$(read_pid "${name}")"
+  if is_pid_running "${pid}"; then
+    echo "[INFO] edge already running (pid=${pid})"
+    return 0
+  fi
+  if pgrep -f "edge_device.api.server" >/dev/null 2>&1; then
+    echo "[WARN] edge process already running (external), skip start"
+    return 0
+  fi
+
+  echo "[INFO] starting edge in background..."
+  (
+    cd "${ROOT_DIR}"
+    nohup env \
+      EDGE_ACTION="${EDGE_ACTION}" \
+      EDGE_LOOP="${EDGE_LOOP}" \
+      EDGE_INTERVAL_SEC="${EDGE_INTERVAL_SEC}" \
+      EDGE_BACKEND_BASE_URL="${EDGE_BACKEND_BASE_URL}" \
+      ./scripts/start_edge.sh "${EDGE_ACTION}" >"$(log_file "${name}")" 2>&1 &
+    echo $! >"$(pid_file "${name}")"
+  )
+
+  pid="$(read_pid "${name}")"
+  for _ in $(seq 1 20); do
+    if ! is_pid_running "${pid}"; then
+      break
+    fi
+    if grep -q "\"type\": \"heartbeat_response\"" "$(log_file "${name}")" 2>/dev/null; then
+      echo "[INFO] edge started (pid=${pid})"
+      return 0
+    fi
+    sleep 0.2
+  done
+
+  if is_pid_running "${pid}"; then
+    echo "[INFO] edge process is running (pid=${pid})"
+    return 0
+  fi
+
+  echo "[ERROR] edge process exited during startup"
   tail -n 80 "$(log_file "${name}")" || true
   return 1
 }
@@ -222,6 +278,11 @@ status_one() {
       echo "[STATUS] ${name}: running(external) pid=unknown"
       return 0
     fi
+  elif [[ "${name}" == "edge" ]]; then
+    if pgrep -f "edge_device.api.server" >/dev/null 2>&1; then
+      echo "[STATUS] ${name}: running(external) pid=unknown"
+      return 0
+    fi
   elif is_port_open "${port}"; then
     echo "[STATUS] ${name}: running(external) port=${port} pid=unknown"
     return 0
@@ -238,10 +299,16 @@ cmd_start() {
   start_backend
   start_mcp
   start_gateway
+  if [[ "${EDGE_ENABLED}" == "1" ]]; then
+    start_edge
+  else
+    echo "[INFO] edge auto-start disabled (EDGE_ENABLED=${EDGE_ENABLED})"
+  fi
   echo "[INFO] all requested services handled."
 }
 
 cmd_stop() {
+  stop_one "edge"
   stop_one "gateway"
   stop_one "mcp"
   stop_one "backend"
@@ -251,6 +318,7 @@ cmd_status() {
   status_one "backend" "${BACKEND_PORT}"
   status_one "mcp" "${MCP_PORT}"
   status_one "gateway" "${GATEWAY_PORT}"
+  status_one "edge" "n/a"
   echo "[INFO] logs directory: ${LOG_DIR}"
 }
 
@@ -272,11 +340,16 @@ Usage:
   ./scripts/stack_ctl.sh stop
   ./scripts/stack_ctl.sh restart
   ./scripts/stack_ctl.sh status
-  ./scripts/stack_ctl.sh logs [backend|mcp|gateway]
+  ./scripts/stack_ctl.sh logs [backend|mcp|gateway|edge]
 
 Common env vars:
   NANOBOT_INSTANCE=prod|dev
   NANOBOT_AUTO_DISABLE_MCP=0|1
+  EDGE_ENABLED=0|1
+  EDGE_ACTION=heartbeat|run-once
+  EDGE_LOOP=0|1
+  EDGE_INTERVAL_SEC=15
+  EDGE_BACKEND_BASE_URL=http://127.0.0.1:8000
   BACKEND_PORT=8000
   MCP_PORT=8001
   NANOBOT_PORT=18790|18791
