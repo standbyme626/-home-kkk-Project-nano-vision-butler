@@ -27,6 +27,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${EDGE_CLIP_DIR:=${ROOT_DIR}/data/edge_device/clips}"
 : "${EDGE_SNAPSHOT_BUFFER_SIZE:=32}"
 : "${EDGE_CLIP_BUFFER_SIZE:=16}"
+: "${EDGE_PENDING_EVENT_DIR:=${ROOT_DIR}/data/edge_device/pending_events}"
+: "${EDGE_PENDING_EVENT_MAX:=256}"
+: "${EDGE_PENDING_FLUSH_BATCH:=32}"
 : "${PYTHON_BIN:=python3}"
 
 if [[ $# -gt 0 ]]; then
@@ -34,7 +37,7 @@ if [[ $# -gt 0 ]]; then
   shift
 fi
 
-mkdir -p "${EDGE_SNAPSHOT_DIR}" "${EDGE_CLIP_DIR}" "${ROOT_DIR}/logs"
+mkdir -p "${EDGE_SNAPSHOT_DIR}" "${EDGE_CLIP_DIR}" "${EDGE_PENDING_EVENT_DIR}" "${ROOT_DIR}/logs"
 cd "${ROOT_DIR}"
 
 export EDGE_DEVICE_ID
@@ -58,6 +61,9 @@ export EDGE_SNAPSHOT_DIR
 export EDGE_CLIP_DIR
 export EDGE_SNAPSHOT_BUFFER_SIZE
 export EDGE_CLIP_BUFFER_SIZE
+export EDGE_PENDING_EVENT_DIR
+export EDGE_PENDING_EVENT_MAX
+export EDGE_PENDING_FLUSH_BATCH
 
 echo "[INFO] Starting edge runtime"
 echo "[INFO] Action             : ${EDGE_ACTION}"
@@ -81,6 +87,9 @@ echo "[INFO] Snapshot dir       : ${EDGE_SNAPSHOT_DIR}"
 echo "[INFO] Clip dir           : ${EDGE_CLIP_DIR}"
 echo "[INFO] Snapshot buf size  : ${EDGE_SNAPSHOT_BUFFER_SIZE}"
 echo "[INFO] Clip buf size      : ${EDGE_CLIP_BUFFER_SIZE}"
+echo "[INFO] Pending event dir  : ${EDGE_PENDING_EVENT_DIR}"
+echo "[INFO] Pending event max  : ${EDGE_PENDING_EVENT_MAX}"
+echo "[INFO] Flush batch size   : ${EDGE_PENDING_FLUSH_BATCH}"
 
 if [[ "${EDGE_LOOP}" == "1" ]]; then
   while true; do

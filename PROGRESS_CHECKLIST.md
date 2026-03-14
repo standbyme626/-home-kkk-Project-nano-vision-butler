@@ -29,7 +29,7 @@
 - [x] Prompt12F RKNN 检测模型部署（主检测）（新增 rknn_detector + 部署脚本/文档 + 降级单测，2026-03-14 通过）
 - [x] Prompt12G 跟踪/Zone/事件压缩质量提升（IoU 跟踪 + zone 映射 + 阈值/去重/节流压缩策略 + 集成测试，2026-03-14 通过）
 - [x] Prompt12H Recent Clip 真实化（MP4 + ring buffer）（_assemble_clip 真实 MP4 编码 + ring buffer 策略增强 + 集成测试，2026-03-14 通过）
-- [ ] Prompt12I 可靠性/安全/压测验收
+- [x] Prompt12I 可靠性/安全/压测验收（新增可靠性计划/压测报告/soak脚本/集成测试，断网补传与回压策略已验证，2026-03-14 通过）
 - [x] Prompt13 安全与访问控制落地
 - [x] Prompt14 测试矩阵落地
 - [x] Prompt15 最终联调收尾与交付
@@ -61,7 +61,7 @@
 - [x] T13F RKNN 检测模型部署（主检测）（新增 rknn_detector + 部署脚本/文档 + 降级单测，2026-03-14 通过）
 - [x] T13G 跟踪/Zone/事件压缩质量提升（新增 test_edge_event_quality + edge 相关测试 13 项通过，2026-03-14）
 - [x] T13H Recent Clip 真实化（MP4 + ring buffer）（新增 test_edge_recent_clip_real_media + 相关回归测试 9 项通过，2026-03-14）
-- [ ] T13I 可靠性/安全/压测验收
+- [x] T13I 可靠性/安全/压测验收（新增 test_edge_reliability_flow + edge_soak_test.sh，可靠性相关回归 10 项通过，2026-03-14）
 - [x] T14 安全与访问控制落地
 - [x] T15 测试矩阵落地
 - [x] T16 最终联调收尾与交付

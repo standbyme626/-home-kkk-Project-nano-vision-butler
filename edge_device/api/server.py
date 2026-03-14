@@ -49,6 +49,9 @@ class EdgeDeviceConfig:
     clip_dir: Path = field(default_factory=lambda: Path("./data/edge_device/clips"))
     snapshot_buffer_size: int = 32
     clip_buffer_size: int = 16
+    pending_event_dir: Path = field(default_factory=lambda: Path("./data/edge_device/pending_events"))
+    pending_event_max: int = 256
+    pending_flush_batch: int = 32
 
 
 class EdgeDeviceRuntime:
@@ -87,6 +90,7 @@ class EdgeDeviceRuntime:
         )
         self.heartbeat_builder = heartbeat_builder or HeartbeatBuilder(model_version=self.detector.model_version)
         self._event_seq_no = 0
+        self.config.pending_event_dir.mkdir(parents=True, exist_ok=True)
 
     def run_once(self, *, trace_id: str | None = None) -> dict[str, Any]:
         frame = self.camera.capture_latest_frame()
@@ -109,6 +113,10 @@ class EdgeDeviceRuntime:
             detector_error=detector_error,
         )
         backend_response = self.backend_client.post_event(envelope["payload"])
+        event_queued = False
+        if not self._is_backend_ack(backend_response):
+            self._enqueue_pending_event(envelope["payload"])
+            event_queued = True
         return {
             "ok": True,
             "type": "edge_run_once",
@@ -120,22 +128,29 @@ class EdgeDeviceRuntime:
                 "snapshot_uri": snapshot.uri,
                 "event_envelope": envelope,
                 "backend_response": backend_response,
+                "event_queued": event_queued,
+                "pending_event_count": self._pending_event_count(),
             },
         }
 
     def send_heartbeat(self, *, trace_id: str | None = None) -> dict[str, Any]:
+        flush_report = self._flush_pending_events()
         payload = self.heartbeat_builder.build(
             device_id=self.config.device_id,
             camera_id=self.config.camera_id,
             trace_id=trace_id,
         )
+        payload["last_upload_ok"] = bool(flush_report.get("ok"))
         backend_response = self.backend_client.post_heartbeat(payload)
+        payload["last_upload_ok"] = bool(flush_report.get("ok")) and self._is_backend_ack(backend_response)
         return {
             "ok": True,
             "type": "heartbeat_response",
             "data": {
                 "payload": payload,
                 "backend_response": backend_response,
+                "flush_report": flush_report,
+                "pending_event_count": self._pending_event_count(),
             },
         }
 
@@ -421,6 +436,154 @@ class EdgeDeviceRuntime:
         self._event_seq_no += 1
         return self._event_seq_no
 
+    def _pending_event_count(self) -> int:
+        return len(list(self.config.pending_event_dir.glob("*.json")))
+
+    def _pending_event_files(self) -> list[Path]:
+        files = [path for path in self.config.pending_event_dir.glob("*.json") if path.is_file()]
+        return sorted(files, key=lambda item: item.name)
+
+    @staticmethod
+    def _pending_priority(payload: dict[str, Any]) -> int:
+        event_type = str(payload.get("event_type") or "").strip().lower()
+        try:
+            importance = int(payload.get("importance") or 0)
+        except (TypeError, ValueError):
+            importance = 0
+        if event_type == "security_alert" or importance >= 4:
+            return 0
+        if event_type == "object_detected":
+            return 1
+        return 5
+
+    def _enqueue_pending_event(self, payload: dict[str, Any]) -> None:
+        priority = self._pending_priority(payload)
+        now = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+        file_name = f"{priority:02d}_{now}_{uuid4().hex[:8]}.json"
+        output = self.config.pending_event_dir / file_name
+        output.write_text(
+            json.dumps(
+                {
+                    "queued_at": utc_now_iso8601(),
+                    "priority": priority,
+                    "payload": payload,
+                },
+                ensure_ascii=False,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        self._enforce_pending_limit()
+
+    def _enforce_pending_limit(self) -> None:
+        files = self._pending_event_files()
+        overflow = len(files) - max(int(self.config.pending_event_max), 1)
+        if overflow <= 0:
+            return
+
+        def drop_order(path: Path) -> tuple[int, str]:
+            priority = self._priority_from_file_name(path.name)
+            # Drop low-priority files first (higher numeric value), then oldest by file name.
+            return (-priority, path.name)
+
+        for target in sorted(files, key=drop_order)[:overflow]:
+            try:
+                target.unlink(missing_ok=True)
+                LOGGER.warning("Dropped pending event due to backpressure: %s", target.name)
+            except OSError as exc:  # pragma: no cover - filesystem boundary
+                LOGGER.warning("Failed to remove pending event file %s: %s", target, exc)
+
+    def _flush_pending_events(self) -> dict[str, Any]:
+        files = self._pending_event_files()
+        if not files:
+            return {
+                "ok": True,
+                "attempted": 0,
+                "flushed": 0,
+                "failed": 0,
+            }
+
+        attempted = 0
+        flushed = 0
+        failed = 0
+        last_error: str | None = None
+        batch = max(int(self.config.pending_flush_batch), 1)
+        for event_file in files[:batch]:
+            attempted += 1
+            try:
+                raw = json.loads(event_file.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                failed += 1
+                last_error = f"read_pending_event_failed:{exc}"
+                LOGGER.warning("Pending event file unreadable, dropping: %s", event_file)
+                event_file.unlink(missing_ok=True)
+                continue
+
+            payload = raw.get("payload") if isinstance(raw, dict) else None
+            if not isinstance(payload, dict):
+                failed += 1
+                last_error = "pending_event_missing_payload"
+                event_file.unlink(missing_ok=True)
+                continue
+
+            backend_response = self.backend_client.post_event(payload)
+            if self._is_backend_ack(backend_response):
+                flushed += 1
+                event_file.unlink(missing_ok=True)
+                continue
+
+            failed += 1
+            last_error = self._as_optional_text(backend_response.get("error")) or "pending_event_upload_failed"
+            break
+
+        return {
+            "ok": failed == 0,
+            "attempted": attempted,
+            "flushed": flushed,
+            "failed": failed,
+            "last_error": last_error,
+        }
+
+    @staticmethod
+    def _priority_from_file_name(name: str) -> int:
+        head, _, _ = name.partition("_")
+        try:
+            return int(head)
+        except ValueError:
+            return 99
+
+    @staticmethod
+    def _is_backend_ack(response: dict[str, Any]) -> bool:
+        if not isinstance(response, dict):
+            return False
+        if not bool(response.get("ok")):
+            return False
+        data = response.get("data")
+        if isinstance(data, dict) and "accepted" in data and not bool(data.get("accepted")):
+            return False
+        return True
+
+    def pending_event_snapshot(self) -> list[dict[str, Any]]:
+        snapshot: list[dict[str, Any]] = []
+        for event_file in self._pending_event_files():
+            try:
+                raw = json.loads(event_file.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            payload = raw.get("payload") if isinstance(raw, dict) else {}
+            if not isinstance(payload, dict):
+                payload = {}
+            snapshot.append(
+                {
+                    "file": event_file.name,
+                    "priority": self._priority_from_file_name(event_file.name),
+                    "event_id": self._as_optional_text(payload.get("event_id")),
+                    "event_type": self._as_optional_text(payload.get("event_type")),
+                    "importance": payload.get("importance"),
+                }
+            )
+        return snapshot
+
 
 def load_config_from_env() -> EdgeDeviceConfig:
     capture_resolution = os.getenv("EDGE_CAPTURE_RESOLUTION", "1280x720")
@@ -441,6 +604,9 @@ def load_config_from_env() -> EdgeDeviceConfig:
         clip_dir=Path(os.getenv("EDGE_CLIP_DIR", "./data/edge_device/clips")),
         snapshot_buffer_size=int(os.getenv("EDGE_SNAPSHOT_BUFFER_SIZE", "32")),
         clip_buffer_size=int(os.getenv("EDGE_CLIP_BUFFER_SIZE", "16")),
+        pending_event_dir=Path(os.getenv("EDGE_PENDING_EVENT_DIR", "./data/edge_device/pending_events")),
+        pending_event_max=int(os.getenv("EDGE_PENDING_EVENT_MAX", "256")),
+        pending_flush_batch=int(os.getenv("EDGE_PENDING_FLUSH_BATCH", "32")),
     )
 
 
