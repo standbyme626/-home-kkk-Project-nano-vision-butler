@@ -17,6 +17,8 @@ from edge_device.cache.ring_buffer import ClipItem, MediaRingBuffer, SnapshotIte
 from edge_device.capture.camera import (
     CameraProtocol,
     CapturedFrame,
+    LatestFramePrefetchCamera,
+    StubCamera,
     compact_now_for_filename,
     create_camera,
     utc_now_iso8601,
@@ -51,6 +53,8 @@ class EdgeDeviceConfig:
     capture_backend: str = "auto"
     capture_retry_count: int = 3
     capture_retry_delay_sec: float = 1.0
+    capture_parallel: bool = True
+    capture_parallel_wait_sec: float = 0.4
     snapshot_dir: Path = field(default_factory=lambda: Path("./data/edge_device/snapshots"))
     clip_dir: Path = field(default_factory=lambda: Path("./data/edge_device/clips"))
     snapshot_buffer_size: int = 32
@@ -77,7 +81,7 @@ class EdgeDeviceRuntime:
     ) -> None:
         self.config = config
         self.backend_client = backend_client or BackendApiClient(base_url=config.backend_base_url)
-        self.camera = camera or create_camera(
+        created_camera = camera or create_camera(
             source=config.capture_source,
             width=config.capture_width,
             height=config.capture_height,
@@ -87,6 +91,23 @@ class EdgeDeviceRuntime:
             retry_count=config.capture_retry_count,
             retry_delay_sec=config.capture_retry_delay_sec,
         )
+        self.camera: CameraProtocol = created_camera
+        if (
+            camera is None
+            and config.capture_parallel
+            and not isinstance(created_camera, StubCamera)
+        ):
+            self.camera = LatestFramePrefetchCamera(
+                camera=created_camera,
+                target_fps=config.capture_fps,
+                wait_timeout_sec=config.capture_parallel_wait_sec,
+            )
+            LOGGER.info(
+                "capture prefetch enabled: source=%s fps=%s wait_timeout=%.2fs",
+                config.capture_source or "<auto>",
+                config.capture_fps,
+                config.capture_parallel_wait_sec,
+            )
         self.detector = detector or create_detector_from_env()
         self.tracker = tracker or LightweightTracker()
         self.compressor = compressor or EventCompressor()
@@ -97,6 +118,13 @@ class EdgeDeviceRuntime:
         self.heartbeat_builder = heartbeat_builder or HeartbeatBuilder(model_version=self.detector.model_version)
         self._event_seq_no = 0
         self.config.pending_event_dir.mkdir(parents=True, exist_ok=True)
+
+    def __del__(self) -> None:  # pragma: no cover - defensive cleanup path
+        try:
+            if isinstance(self.camera, LatestFramePrefetchCamera):
+                self.camera.stop()
+        except Exception:
+            return
 
     def run_once(self, *, trace_id: str | None = None) -> dict[str, Any]:
         frame = self.camera.capture_latest_frame()
@@ -669,11 +697,13 @@ def load_config_from_env() -> EdgeDeviceConfig:
         capture_source=(os.getenv("EDGE_CAPTURE_SOURCE", "") or None),
         capture_width=int(os.getenv("EDGE_CAPTURE_WIDTH", str(capture_width))),
         capture_height=int(os.getenv("EDGE_CAPTURE_HEIGHT", str(capture_height))),
-        capture_fps=int(os.getenv("EDGE_CAPTURE_FPS", "25")),
+        capture_fps=int(os.getenv("EDGE_CAPTURE_FPS", "30")),
         capture_pixel_format=os.getenv("EDGE_CAPTURE_PIXEL_FORMAT", "MJPG"),
         capture_backend=os.getenv("EDGE_CAPTURE_BACKEND", "auto"),
         capture_retry_count=int(os.getenv("EDGE_CAPTURE_RETRY_COUNT", "3")),
         capture_retry_delay_sec=float(os.getenv("EDGE_CAPTURE_RETRY_DELAY_SEC", "1.0")),
+        capture_parallel=_parse_bool_env(os.getenv("EDGE_CAPTURE_PARALLEL"), fallback=True),
+        capture_parallel_wait_sec=float(os.getenv("EDGE_CAPTURE_PARALLEL_WAIT_SEC", "0.4")),
         snapshot_dir=Path(os.getenv("EDGE_SNAPSHOT_DIR", "./data/edge_device/snapshots")),
         clip_dir=Path(os.getenv("EDGE_CLIP_DIR", "./data/edge_device/clips")),
         snapshot_buffer_size=int(os.getenv("EDGE_SNAPSHOT_BUFFER_SIZE", "32")),
@@ -695,6 +725,17 @@ def _parse_resolution(value: str) -> tuple[int, int]:
         return width, height
     except ValueError:
         return 1280, 720
+
+
+def _parse_bool_env(raw: str | None, *, fallback: bool) -> bool:
+    if raw is None:
+        return fallback
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    return fallback
 
 
 def main() -> None:

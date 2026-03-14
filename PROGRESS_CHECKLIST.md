@@ -40,6 +40,7 @@
 - [x] Prompt16 轻前端重后端改造第一阶段（新增 docs/edge/light_edge_heavy_backend_refactor.md，edge analysis_requests 协议扩展与后端 OCR 自动触发链路，2026-03-14）
 - [x] Prompt16-Hotfix 日志时间统一为本地时区（新增 `VISION_BUTLER_TIME_MODE`，启动脚本默认 `local + Asia/Shanghai`，2026-03-14）
 - [x] Prompt16-Hotfix 摄像头 capture 限制解除（RK3566 实机确认 `YUYV@720p` 平均采集约 200ms、`MJPG@720p` 约 33ms；`start_edge.sh` 增加 v4l2 自动调优并文档同步，2026-03-15）
+- [x] Prompt16-Hotfix 默认模型切换 YOLOv8n INT8 + 并行流水线（`yolov8n_official_i8_rk3566.rknn` 作为默认模型，新增 `LatestFramePrefetchCamera` 并行采集，2026-03-15）
 
 ## B. TASKS 任务清单（T0-T16 + T13A-T13I）
 - [x] T0 仓库初始化与约束固化
@@ -79,6 +80,7 @@
 - [x] T17 轻前端重后端改造第一阶段（edge analysis_requests + backend OCR hook + 协议/schema/测试同步，2026-03-14）
 - [x] T17-Hotfix 日志时间统一为本地时区（`src/db/session.py` + edge 时间函数支持 local/utc，`start_backend.sh`/`start_edge.sh` 默认本地时区，2026-03-14）
 - [x] T17-Hotfix 摄像头 capture 限制解除（`scripts/start_edge.sh` 增加 `EDGE_CAPTURE_APPLY_V4L2_TUNING` 与实机参数固化，`docs/EDGE_DEVICE.md` 与 `docs/edge/model_ab_test_matrix.md` 同步，2026-03-15）
+- [x] T17-Hotfix 默认模型切换 YOLOv8n INT8 + 并行流水线（`edge_device/capture/camera.py` 并行预取，`edge_device/api/server.py` 注入并行配置，`scripts/start_edge.sh` 默认模型切换，2026-03-15）
 
 ## C. 验收打勾规则
 - [ ] 目标文件已创建或修改正确

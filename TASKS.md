@@ -864,6 +864,28 @@
 
 ---
 
+## T17-Hotfix 默认模型切换 YOLOv8n INT8 + 采集推理并行流水线
+状态：DONE（2026-03-15）
+优先级：P1
+依赖：T17-Hotfix 摄像头 capture 限制解除（强制 MJPG 防回落）
+
+### 目标
+将 RK3566 上线默认模型切换为 `YOLOv8n INT8`，并在 edge 端启用“采集预取 + 推理消费”的并行流水线，减少串行等待。
+
+### 输出
+- `edge_device/inference/rknn_detector.py`（默认模型改为 `yolov8n_official_i8_rk3566.rknn`）
+- `scripts/start_edge.sh`（默认模型路径 + 并行参数 `EDGE_CAPTURE_PARALLEL*`）
+- `edge_device/api/server.py`（并行采集配置注入）
+- `edge_device/capture/camera.py`（`LatestFramePrefetchCamera`）
+- `tests/unit/test_edge_capture.py` / `tests/unit/test_rknn_detector.py`（回归测试）
+
+### 验收
+- 不传 `EDGE_RKNN_MODEL_PATH` 时默认加载 `./models/rknn/yolov8n_official_i8_rk3566.rknn`
+- `EDGE_CAPTURE_PARALLEL=1` 时，runtime 启动日志可见并行采集启用
+- 相关单测通过，RK3566 实机启动链路可运行
+
+---
+
 ## 推荐并行方式
 
 ### A 线：数据与事实层

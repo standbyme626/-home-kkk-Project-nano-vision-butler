@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import os
+import threading
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from itertools import count
-from typing import Protocol
+from pathlib import Path
+from typing import Callable, Protocol
 
 
 def utc_now_iso8601() -> str:
@@ -77,6 +80,98 @@ class StubCamera:
             source=self._source,
             pixel_format=self._pixel_format,
         )
+
+
+class LatestFramePrefetchCamera:
+    """Continuously prefetch latest frame so capture and inference can overlap."""
+
+    def __init__(
+        self,
+        *,
+        camera: CameraProtocol,
+        target_fps: int,
+        wait_timeout_sec: float = 0.4,
+        sleep_fn: Callable[[float], None] | None = None,
+    ) -> None:
+        self._camera = camera
+        self._target_interval_sec = 1.0 / max(int(target_fps), 1)
+        self._wait_timeout_sec = max(float(wait_timeout_sec), 0.05)
+        self._sleep = sleep_fn or time.sleep
+
+        self._capture_lock = threading.Lock()
+        self._state_cond = threading.Condition()
+        self._latest_frame: CapturedFrame | None = None
+        self._last_error: Exception | None = None
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(
+            target=self._prefetch_loop,
+            name="edge-capture-prefetch",
+            daemon=True,
+        )
+        self._thread.start()
+
+    def capture_latest_frame(self) -> CapturedFrame:
+        deadline = time.monotonic() + self._wait_timeout_sec
+        with self._state_cond:
+            while self._latest_frame is None and not self._stop_event.is_set():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                self._state_cond.wait(timeout=remaining)
+            if self._latest_frame is not None:
+                frame = self._latest_frame
+                self._latest_frame = None
+                return frame
+            last_error = self._last_error
+
+        if last_error is not None:
+            raise CaptureError(f"prefetch capture failed: {last_error}")
+
+        # Fallback to direct capture for startup race or temporary prefetch miss.
+        with self._capture_lock:
+            return self._camera.capture_latest_frame()
+
+    def stop(self) -> None:
+        self._stop_event.set()
+        with self._state_cond:
+            self._state_cond.notify_all()
+        self._thread.join(timeout=0.5)
+        with self._state_cond:
+            stale = self._latest_frame
+            self._latest_frame = None
+        self._cleanup_frame_artifacts(stale)
+
+    def _prefetch_loop(self) -> None:
+        while not self._stop_event.is_set():
+            loop_start = time.monotonic()
+            try:
+                with self._capture_lock:
+                    frame = self._camera.capture_latest_frame()
+                with self._state_cond:
+                    stale = self._latest_frame
+                    self._latest_frame = frame
+                    self._last_error = None
+                    self._state_cond.notify_all()
+                self._cleanup_frame_artifacts(stale)
+            except Exception as exc:  # pragma: no cover - defensive background boundary
+                with self._state_cond:
+                    self._last_error = exc
+                    self._state_cond.notify_all()
+
+            elapsed = time.monotonic() - loop_start
+            remaining = self._target_interval_sec - elapsed
+            if remaining > 0:
+                self._sleep(remaining)
+
+    @staticmethod
+    def _cleanup_frame_artifacts(frame: CapturedFrame | None) -> None:
+        if frame is None or not frame.image_path:
+            return
+        path = Path(frame.image_path)
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            return
 
 
 def create_camera(

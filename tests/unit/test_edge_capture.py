@@ -1,10 +1,33 @@
 from __future__ import annotations
 
 import subprocess
+import tempfile
+import time
 import unittest
+from pathlib import Path
 
-from edge_device.capture.camera import CaptureError, StubCamera, create_camera
+from edge_device.capture.camera import CaptureError, CapturedFrame, LatestFramePrefetchCamera, StubCamera, create_camera
 from edge_device.capture.v4l2_camera import V4L2Camera, V4L2CaptureConfig
+
+
+class _FastFakeCamera:
+    def __init__(self, root: Path) -> None:
+        self._root = root
+        self._seq = 0
+
+    def capture_latest_frame(self) -> CapturedFrame:
+        self._seq += 1
+        path = self._root / f"fake_{self._seq:06d}.jpg"
+        path.write_bytes(b"\xff\xd8\xff\xd9")
+        return CapturedFrame(
+            frame_id=f"frame-{self._seq:06d}",
+            captured_at="2026-03-15T00:00:00+08:00",
+            width=1280,
+            height=720,
+            source="/dev/video0",
+            pixel_format="MJPG",
+            image_path=str(path),
+        )
 
 
 class EdgeCaptureTests(unittest.TestCase):
@@ -108,6 +131,24 @@ class EdgeCaptureTests(unittest.TestCase):
             camera.capture_latest_frame()
         self.assertIn("capture failed after retries", str(context.exception))
         self.assertIn("device unavailable", str(context.exception))
+
+    def test_prefetch_camera_keeps_latest_frame_and_cleans_stale_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="edge_prefetch_") as tmp:
+            root = Path(tmp)
+            base_camera = _FastFakeCamera(root)
+            prefetch = LatestFramePrefetchCamera(camera=base_camera, target_fps=120, wait_timeout_sec=0.2)
+            try:
+                time.sleep(0.06)
+                frame = prefetch.capture_latest_frame()
+                self.assertTrue(frame.frame_id.startswith("frame-"))
+                self.assertTrue(Path(frame.image_path or "").exists())
+                time.sleep(0.06)
+            finally:
+                prefetch.stop()
+
+            # stale frame artifacts should be eagerly cleaned; only latest snapshots may remain.
+            leftovers = list(root.glob("fake_*.jpg"))
+            self.assertLessEqual(len(leftovers), 2)
 
 
 if __name__ == "__main__":

@@ -31,6 +31,8 @@ python3 -m edge_device.api.server get-recent-clip --duration-sec 6
 - `EDGE_CAPTURE_BACKEND`：`auto | v4l2 | gstreamer | ffmpeg | stub`
 - `EDGE_CAPTURE_APPLY_V4L2_TUNING`：启动时是否自动执行 `v4l2-ctl` 设定（默认 `1`）
 - `EDGE_CAPTURE_DISABLE_DYNAMIC_FRAMERATE`：是否关闭 `exposure_dynamic_framerate`（默认 `0`）
+- `EDGE_CAPTURE_PARALLEL`：是否开启采集预取并行（默认 `1`）
+- `EDGE_CAPTURE_PARALLEL_WAIT_SEC`：并行采集取帧等待上限秒数（默认 `0.4`）
 - `EDGE_CAPTURE_RETRY_COUNT` / `EDGE_CAPTURE_RETRY_DELAY_SEC`：失败重试参数
 - `EDGE_DETECTOR_BACKEND`：`auto | rknn | lightweight`
 - `EDGE_RKNN_MODEL_PATH` / `EDGE_RKNN_MODEL_VERSION`：RKNN 模型路径与版本
