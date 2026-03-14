@@ -10,7 +10,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <model_rknn_path> [loops]"
-  echo "Example: $0 ./models/rknn/main_detector.rknn 50"
+  echo "Example: $0 ./models/rknn/main_detector_n_int8.rknn 50"
   exit 1
 fi
 

@@ -182,8 +182,9 @@ class RKNNDetector:
 
 def create_rknn_detector_from_env(*, min_confidence: float) -> RKNNDetector:
     raw_model_path = (os.getenv("EDGE_RKNN_MODEL_PATH") or "").strip()
-    model_path = Path(raw_model_path) if raw_model_path else Path("./models/rknn/main_detector.rknn")
-    model_version = os.getenv("EDGE_RKNN_MODEL_VERSION", model_path.stem or "rknn-main")
+    model_path = Path(raw_model_path) if raw_model_path else Path("./models/rknn/main_detector_n_int8.rknn")
+    raw_model_version = (os.getenv("EDGE_RKNN_MODEL_VERSION") or "").strip()
+    model_version = raw_model_version or (model_path.stem or "rknn-main")
     input_width, input_height = _parse_input_size(os.getenv("EDGE_RKNN_INPUT_SIZE", "640x640"))
     labels = _parse_labels(os.getenv("EDGE_RKNN_LABELS", "person,package,car"))
     return RKNNDetector(

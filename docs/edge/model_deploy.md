@@ -13,7 +13,7 @@
 ## 环境变量
 - `EDGE_DETECTOR_BACKEND`：`auto | rknn | lightweight`（默认 `auto`）。
 - `EDGE_DETECT_MIN_CONFIDENCE`：最小置信度阈值（默认 `0.35`）。
-- `EDGE_RKNN_MODEL_PATH`：RKNN 模型路径（默认 `./models/rknn/main_detector.rknn`）。
+- `EDGE_RKNN_MODEL_PATH`：RKNN 模型路径（默认 `./models/rknn/main_detector_n_int8.rknn`）。
 - `EDGE_RKNN_MODEL_VERSION`：模型版本号（默认取模型文件名 stem）。
 - `EDGE_RKNN_INPUT_SIZE`：推理输入大小（例如 `640x640`）。
 - `EDGE_RKNN_LABELS`：类别列表（逗号分隔，默认 `person,package,car`）。
@@ -22,14 +22,14 @@
 1. 准备 ONNX 模型。
 2. 在 PC 端执行：
 ```bash
-./scripts/rknn/export_to_rknn.sh ./models/onnx/main_detector.onnx ./models/rknn/main_detector.rknn rk3566
+./scripts/rknn/export_to_rknn.sh ./models/onnx/main_detector_n.onnx ./models/rknn/main_detector_n_int8.rknn rk3566
 ```
 3. 将 `.rknn` 文件同步到板端 `EDGE_RKNN_MODEL_PATH`。
 
 ## 板端基准
 ```bash
 EDGE_DETECTOR_BACKEND=rknn \
-./scripts/rknn/run_infer_benchmark.sh ./models/rknn/main_detector.rknn 30
+./scripts/rknn/run_infer_benchmark.sh ./models/rknn/main_detector_n_int8.rknn 30
 ```
 
 输出包含：

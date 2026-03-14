@@ -28,6 +28,7 @@
 - [x] Prompt12D-Hotfix 快照黑屏修复（`CapturedFrame.image_path` + V4L2 MJPG 直出 + 实机 `take-snapshot/run-once` 复测，2026-03-14）
 - [x] Prompt12E 命令闭环最小打通（替换后端 StubEdgeDeviceAdapter）（新增 edge_command_client + 命令桥接集成测试，2026-03-14 通过）
 - [x] Prompt12F RKNN 检测模型部署（主检测）（新增 rknn_detector + 部署脚本/文档 + 降级单测，2026-03-14 通过）
+- [x] Prompt12F-Hotfix 默认模型切换为 `main_detector_n_int8.rknn`（更新 RKNN 默认路径/脚本/文档与单测，RK3566 实机升频后复测，2026-03-14）
 - [x] Prompt12G 跟踪/Zone/事件压缩质量提升（IoU 跟踪 + zone 映射 + 阈值/去重/节流压缩策略 + 集成测试，2026-03-14 通过）
 - [x] Prompt12H Recent Clip 真实化（MP4 + ring buffer）（_assemble_clip 真实 MP4 编码 + ring buffer 策略增强 + 集成测试，2026-03-14 通过）
 - [x] Prompt12I 可靠性/安全/压测验收（新增可靠性计划/压测报告/soak脚本/集成测试，断网补传与回压策略已验证，2026-03-14 通过）
@@ -65,6 +66,7 @@
 - [x] T13D-Hotfix 快照黑屏修复（实机 RK3566 验证 `take-snapshot/run-once`，抓拍恢复真实画面，2026-03-14）
 - [x] T13E 命令闭环最小打通（替换后端 StubEdgeDeviceAdapter）（新增 edge_command_client + 命令桥接集成测试，2026-03-14 通过）
 - [x] T13F RKNN 检测模型部署（主检测）（新增 rknn_detector + 部署脚本/文档 + 降级单测，2026-03-14 通过）
+- [x] T13F-Hotfix 默认模型切换为 `main_detector_n_int8.rknn`（更新默认模型入口与文档示例，实机 RK3566 复测，2026-03-14）
 - [x] T13G 跟踪/Zone/事件压缩质量提升（新增 test_edge_event_quality + edge 相关测试 13 项通过，2026-03-14）
 - [x] T13H Recent Clip 真实化（MP4 + ring buffer）（新增 test_edge_recent_clip_real_media + 相关回归测试 9 项通过，2026-03-14）
 - [x] T13I 可靠性/安全/压测验收（新增 test_edge_reliability_flow + edge_soak_test.sh，可靠性相关回归 10 项通过，2026-03-14）

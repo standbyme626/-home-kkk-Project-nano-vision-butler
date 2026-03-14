@@ -109,7 +109,26 @@ class RKNNDetectorTests(unittest.TestCase):
             else:
                 os.environ["EDGE_RKNN_MODEL_PATH"] = old_model_path
 
-        self.assertEqual(detector.config.model_path, Path("./models/rknn/main_detector.rknn"))
+        self.assertEqual(detector.config.model_path, Path("./models/rknn/main_detector_n_int8.rknn"))
+
+    def test_empty_model_version_env_falls_back_to_model_stem(self) -> None:
+        old_model_path = os.environ.get("EDGE_RKNN_MODEL_PATH")
+        old_model_version = os.environ.get("EDGE_RKNN_MODEL_VERSION")
+        try:
+            os.environ["EDGE_RKNN_MODEL_PATH"] = "./models/rknn/main_detector_n_int8.rknn"
+            os.environ["EDGE_RKNN_MODEL_VERSION"] = ""
+            detector = create_rknn_detector_from_env(min_confidence=0.35)
+        finally:
+            if old_model_path is None:
+                os.environ.pop("EDGE_RKNN_MODEL_PATH", None)
+            else:
+                os.environ["EDGE_RKNN_MODEL_PATH"] = old_model_path
+            if old_model_version is None:
+                os.environ.pop("EDGE_RKNN_MODEL_VERSION", None)
+            else:
+                os.environ["EDGE_RKNN_MODEL_VERSION"] = old_model_version
+
+        self.assertEqual(detector.config.model_version, "main_detector_n_int8")
 
 
 if __name__ == "__main__":

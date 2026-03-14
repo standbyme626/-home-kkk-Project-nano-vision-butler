@@ -593,10 +593,33 @@
 
 ---
 
-## T13G 跟踪/Zone/事件压缩质量提升
+## T13F-Hotfix 默认模型切换为轻量 INT8 主检测
 状态：DONE（2026-03-14）
 优先级：P1
 依赖：T13F
+
+### 目标
+将 edge 运行时默认 RKNN 模型切换为更快的 `main_detector_n_int8.rknn`，减少每次手工传参并提升默认性能。
+
+### 输出
+- edge_device/inference/rknn_detector.py（默认模型路径切换）
+- scripts/start_edge.sh（默认 `EDGE_RKNN_MODEL_PATH` 切换）
+- scripts/rknn/export_to_rknn.sh（示例更新）
+- scripts/rknn/run_infer_benchmark.sh（示例更新）
+- docs/edge/model_deploy.md（默认模型与命令示例更新）
+- tests/unit/test_rknn_detector.py（默认路径断言更新）
+
+### 验收
+- 不传 `EDGE_RKNN_MODEL_PATH` 时默认加载 `./models/rknn/main_detector_n_int8.rknn`
+- `run-once` 启动日志显示默认模型路径正确
+- 相关单测通过，RK3566 实机可运行
+
+---
+
+## T13G 跟踪/Zone/事件压缩质量提升
+状态：DONE（2026-03-14）
+优先级：P1
+依赖：T13F-Hotfix
 
 ### 目标
 提升 event 质量与稳定性，减少抖动和无效上报。
@@ -849,6 +872,7 @@
 - T13D
 - T13E
 - T13F
+- T13F-Hotfix
 - T13G
 - T13H
 - T13I

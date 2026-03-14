@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 if [[ $# -lt 2 ]]; then
   echo "Usage: $0 <onnx_model_path> <output_rknn_path> [target_platform]"
-  echo "Example: $0 ./models/onnx/main_detector.onnx ./models/rknn/main_detector.rknn rk3566"
+  echo "Example: $0 ./models/onnx/main_detector_n.onnx ./models/rknn/main_detector_n_int8.rknn rk3566"
   exit 1
 fi
 
