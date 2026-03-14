@@ -103,6 +103,44 @@
     "signature": {
       "type": ["string", "null"]
     },
+    "analysis_profile": {
+      "type": ["string", "null"]
+    },
+    "analysis_required": {
+      "type": ["boolean", "null"]
+    },
+    "analysis_requests": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "priority": {
+            "type": ["string", "null"]
+          },
+          "reason": {
+            "type": ["string", "null"]
+          },
+          "input_uri": {
+            "type": ["string", "null"]
+          },
+          "object_class": {
+            "type": ["string", "null"]
+          },
+          "track_id": {
+            "type": ["string", "null"]
+          },
+          "field_schema": {
+            "type": ["object", "array", "null"]
+          }
+        }
+      }
+    },
     "trace_id": {
       "type": ["string", "null"]
     },

@@ -21,3 +21,6 @@ notifications:
 security:
   audit_sensitive_actions: true
   require_access_check: true
+
+edge_analysis:
+  enable_backend_analysis: true

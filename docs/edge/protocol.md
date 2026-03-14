@@ -26,6 +26,9 @@
 - `model_version` (optional)
 - `compress_reason` (optional)
 - `signature` (optional)
+- `analysis_profile` (optional)
+- `analysis_required` (optional)
+- `analysis_requests[]` (optional，后端重分析提示)
 
 兼容字段（当前后端仍消费）：
 
@@ -39,6 +42,16 @@
 - `zone_id`
 - `raw_detections`
 - `trace_id`
+
+`analysis_requests[]` 推荐字段（可选）：
+
+- `type`：`ocr_quick_read | ocr_extract_fields`
+- `priority`
+- `reason`
+- `input_uri`
+- `object_class`
+- `track_id`
+- `field_schema`（仅 `ocr_extract_fields` 可选）
 
 ## 3) Heartbeat (`POST /device/heartbeat`)
 

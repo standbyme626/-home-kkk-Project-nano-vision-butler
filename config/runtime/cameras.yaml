@@ -3,7 +3,7 @@ cameras:
     device_id: rk3566-dev-01
     display_name: entry-camera
     stream:
-      source: "rtsp://127.0.0.1/live"
+      source: "rtsp://100.103.105.108/live"
       fps: 10
       width: 1280
       height: 720

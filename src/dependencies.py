@@ -236,12 +236,20 @@ def get_device_service(
         event_repo=EventRepo(conn),
         config=config,
     )
+    ocr_service = OCRService(
+        media_repo=media_repo,
+        observation_repo=ObservationRepo(conn),
+        event_repo=EventRepo(conn),
+        ocr_repo=OcrRepo(conn),
+        audit_repo=audit_repo,
+    )
     perception_service = PerceptionService(
         device_repo=device_repo,
         audit_repo=audit_repo,
         memory_service=memory_service,
         config=config,
         security_guard=security_guard,
+        ocr_service=ocr_service,
     )
     core_service = DeviceCoreService(
         device_repo=device_repo,

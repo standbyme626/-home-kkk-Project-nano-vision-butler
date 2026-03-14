@@ -591,7 +591,7 @@ def load_config_from_env() -> EdgeDeviceConfig:
     return EdgeDeviceConfig(
         device_id=os.getenv("EDGE_DEVICE_ID", "rk3566-dev-01"),
         camera_id=os.getenv("EDGE_CAMERA_ID", "cam-entry-01"),
-        backend_base_url=os.getenv("EDGE_BACKEND_BASE_URL", "http://127.0.0.1:8000"),
+        backend_base_url=os.getenv("EDGE_BACKEND_BASE_URL", "http://100.92.134.46:8000"),
         capture_source=(os.getenv("EDGE_CAPTURE_SOURCE", "") or None),
         capture_width=int(os.getenv("EDGE_CAPTURE_WIDTH", str(capture_width))),
         capture_height=int(os.getenv("EDGE_CAPTURE_HEIGHT", str(capture_height))),

@@ -42,6 +42,15 @@ class EventCompressor:
             _resolve_float(value=throttle_window_sec, env_key="EDGE_EVENT_THROTTLE_WINDOW_SEC", fallback=0.0),
             0.0,
         )
+        self.analysis_enable = _resolve_bool(env_key="EDGE_ANALYSIS_ENABLE", fallback=True)
+        self.analysis_ocr_enable = _resolve_bool(env_key="EDGE_ANALYSIS_OCR_ENABLE", fallback=True)
+        self.analysis_min_importance_ocr = _resolve_int(
+            env_key="EDGE_ANALYSIS_MIN_IMPORTANCE_OCR",
+            fallback=4,
+            minimum=1,
+            maximum=5,
+        )
+        self.analysis_profile = (os.getenv("EDGE_ANALYSIS_PROFILE", "backend_heavy_v1") or "").strip() or "backend_heavy_v1"
         self._time_provider = time_provider or time.monotonic
         self._last_meaningful_emit_at_by_camera: dict[str, float] = {}
         self._last_signature_at: dict[str, float] = {}
@@ -71,6 +80,12 @@ class EventCompressor:
             filtered_detections = []
 
         primary = max(filtered_detections, key=lambda item: item.confidence) if filtered_detections else None
+        importance = self._importance(filtered_detections)
+        analysis_requests = self._build_analysis_requests(
+            primary=primary,
+            importance=importance,
+            snapshot_uri=snapshot_uri,
+        )
         emitted_at = utc_now_iso8601()
         event_id = f"evt-{uuid4().hex[:12]}"
         serialized_objects = [self._serialize_detection(item) for item in filtered_detections]
@@ -106,10 +121,13 @@ class EventCompressor:
             "model_version": model_version,
             "compress_reason": compress_reason,
             "signature": None,
+            "analysis_profile": self.analysis_profile if self.analysis_enable else None,
+            "analysis_required": bool(analysis_requests),
+            "analysis_requests": analysis_requests,
             # Backward-compatible fields consumed by current backend code.
             "observed_at": frame.captured_at,
             "category": "event",
-            "importance": self._importance(filtered_detections),
+            "importance": importance,
             "summary": self._summary(primary, len(filtered_detections), camera_id),
             "object_name": primary.object_name if primary else "scene",
             "object_class": primary.object_class if primary else "scene",
@@ -208,6 +226,36 @@ class EventCompressor:
             f"(track={primary.track_id or 'n/a'}, confidence={primary.confidence:.2f}, count={detection_count})"
         )
 
+    def _build_analysis_requests(
+        self,
+        *,
+        primary: Detection | None,
+        importance: int,
+        snapshot_uri: str | None,
+    ) -> list[dict[str, object]]:
+        if not self.analysis_enable or not self.analysis_ocr_enable:
+            return []
+        if primary is None or not snapshot_uri:
+            return []
+        if importance < self.analysis_min_importance_ocr:
+            return []
+        if primary.confidence < max(self.min_confidence, 0.70):
+            return []
+        if primary.object_class not in {"package", "document", "label", "screen"}:
+            return []
+
+        priority = "high" if importance >= 4 else "normal"
+        return [
+            {
+                "type": "ocr_quick_read",
+                "priority": priority,
+                "reason": f"{primary.object_class}_detected",
+                "input_uri": snapshot_uri,
+                "object_class": primary.object_class,
+                "track_id": primary.track_id,
+            }
+        ]
+
 
 def _resolve_float(*, value: float | None, env_key: str, fallback: float) -> float:
     if value is not None:
@@ -227,3 +275,30 @@ def _clamp_float(value: float, *, lower: float, upper: float) -> float:
     if value > upper:
         return upper
     return value
+
+
+def _resolve_bool(*, env_key: str, fallback: bool) -> bool:
+    raw = os.getenv(env_key)
+    if raw is None:
+        return fallback
+    normalized = raw.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    return fallback
+
+
+def _resolve_int(*, env_key: str, fallback: int, minimum: int, maximum: int) -> int:
+    raw = os.getenv(env_key)
+    if raw is None:
+        return fallback
+    try:
+        parsed = int(raw)
+    except ValueError:
+        parsed = fallback
+    if parsed < minimum:
+        return minimum
+    if parsed > maximum:
+        return maximum
+    return parsed

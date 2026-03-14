@@ -30,9 +30,12 @@
 - [x] Prompt12G 跟踪/Zone/事件压缩质量提升（IoU 跟踪 + zone 映射 + 阈值/去重/节流压缩策略 + 集成测试，2026-03-14 通过）
 - [x] Prompt12H Recent Clip 真实化（MP4 + ring buffer）（_assemble_clip 真实 MP4 编码 + ring buffer 策略增强 + 集成测试，2026-03-14 通过）
 - [x] Prompt12I 可靠性/安全/压测验收（新增可靠性计划/压测报告/soak脚本/集成测试，断网补传与回压策略已验证，2026-03-14 通过）
+- [x] Prompt12-Hotfix 边缘地址与设备信息修正（默认 EDGE_BACKEND_BASE_URL 更新为 `http://100.92.134.46:8000`，相机源更新为 `rtsp://100.103.105.108/live`，2026-03-14）
 - [x] Prompt13 安全与访问控制落地
 - [x] Prompt14 测试矩阵落地
+- [x] Prompt14-Hotfix 测试文档拆分与必要性分析（保留测试.md 原文，新增 docs/edge/testing_index.md + model_selection_strategy.md + model_ab_test_matrix.md + test_necessity_analysis.md；2026-03-14 运行 edge 相关回归通过）
 - [x] Prompt15 最终联调收尾与交付
+- [x] Prompt16 轻前端重后端改造第一阶段（新增 docs/edge/light_edge_heavy_backend_refactor.md，edge analysis_requests 协议扩展与后端 OCR 自动触发链路，2026-03-14）
 
 ## B. TASKS 任务清单（T0-T16 + T13A-T13I）
 - [x] T0 仓库初始化与约束固化
@@ -62,9 +65,12 @@
 - [x] T13G 跟踪/Zone/事件压缩质量提升（新增 test_edge_event_quality + edge 相关测试 13 项通过，2026-03-14）
 - [x] T13H Recent Clip 真实化（MP4 + ring buffer）（新增 test_edge_recent_clip_real_media + 相关回归测试 9 项通过，2026-03-14）
 - [x] T13I 可靠性/安全/压测验收（新增 test_edge_reliability_flow + edge_soak_test.sh，可靠性相关回归 10 项通过，2026-03-14）
+- [x] T13-Hotfix 边缘地址与设备信息修正（默认后端地址/RTSP 地址/设备备忘已同步到 AGENTS.md，2026-03-14）
 - [x] T14 安全与访问控制落地
 - [x] T15 测试矩阵落地
+- [x] T15-Hotfix 测试文档拆分与必要性分析（新增 edge 测试文档拆分与索引，2026-03-14 执行 pytest tests/unit/test_rknn_detector.py tests/unit/test_edge_runtime.py tests/integration/test_edge_event_quality.py 通过）
 - [x] T16 最终联调收尾与交付
+- [x] T17 轻前端重后端改造第一阶段（edge analysis_requests + backend OCR hook + 协议/schema/测试同步，2026-03-14）
 
 ## C. 验收打勾规则
 - [ ] 目标文件已创建或修改正确

@@ -31,6 +31,22 @@ class EdgeProtocolSchemaTests(unittest.TestCase):
         payload = self._load_json(self.examples_dir / "device_ingest_event_min.json")
         self._validate(schema_name="edge_event_envelope.schema.json", payload=payload)
 
+    def test_event_payload_with_analysis_requests_matches_schema(self) -> None:
+        payload = self._load_json(self.examples_dir / "device_ingest_event_min.json")
+        payload["analysis_profile"] = "backend_heavy_v1"
+        payload["analysis_required"] = True
+        payload["analysis_requests"] = [
+            {
+                "type": "ocr_quick_read",
+                "priority": "high",
+                "reason": "package_detected",
+                "input_uri": "file:///tmp/package.jpg",
+                "object_class": "package",
+                "track_id": "trk-001",
+            }
+        ]
+        self._validate(schema_name="edge_event_envelope.schema.json", payload=payload)
+
     def test_heartbeat_example_matches_schema(self) -> None:
         payload = self._load_json(self.examples_dir / "device_heartbeat_min.json")
         self._validate(schema_name="edge_heartbeat.schema.json", payload=payload)

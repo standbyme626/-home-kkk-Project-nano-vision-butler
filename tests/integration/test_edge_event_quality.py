@@ -168,6 +168,37 @@ class EdgeEventQualityIntegrationTests(unittest.TestCase):
         self.assertIn("throttled", throttled["payload"]["compress_reason"])
         self.assertEqual(resumed["payload"]["event_type"], "object_detected")
 
+    def test_event_compression_emits_backend_analysis_requests_for_ocr(self) -> None:
+        frame = self._frame()
+        package = Detection(
+            object_name="package",
+            object_class="package",
+            confidence=0.94,
+            bbox=(220, 120, 520, 500),
+            zone_id="entry_door",
+            track_id="trk-00077",
+        )
+        compressor = EventCompressor(
+            min_confidence=0.35,
+            dedupe_window_sec=0.0,
+            throttle_window_sec=0.0,
+            time_provider=lambda: 500.0,
+        )
+        envelope = compressor.build_envelope(
+            device_id="rk3566-dev-01",
+            camera_id="cam-entry-01",
+            seq_no=88,
+            frame=frame,
+            detections=[package],
+            snapshot_uri="file:///tmp/package.jpg",
+        )
+        payload = envelope["payload"]
+        self.assertEqual(payload["analysis_profile"], "backend_heavy_v1")
+        self.assertTrue(payload["analysis_required"])
+        self.assertIsInstance(payload["analysis_requests"], list)
+        self.assertEqual(payload["analysis_requests"][0]["type"], "ocr_quick_read")
+        self.assertEqual(payload["analysis_requests"][0]["input_uri"], "file:///tmp/package.jpg")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

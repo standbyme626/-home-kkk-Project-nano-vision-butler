@@ -145,6 +145,12 @@ When ending a work session, you MUST complete ALL steps below. Work is NOT compl
 - 至少要更新两处：`A. Prompt 执行清单` 对应项、`B. TASKS 任务清单` 对应项。
 - 若任务完成但未打勾，视为未完成，不得进入下一个任务。
 
+## 本地地址备忘（用户指定）
+- 当前 PC（tailscale）IPv4：`100.92.134.46`
+- 当前 PC（tailscale）IPv6：`fd7a:115c:a1e0::5a01:86a3`
+- RK3566 SSH：`ssh root@100.103.105.108`
+- RK3566 SSH 密码：`wasd1234`
+
 ## Task Board
 - 可变的任务清单（T0~T16、状态、依赖、并行建议）统一维护在 `TASKS.md`。
 - 修改任务状态时只更新 `TASKS.md`，避免和 `AGENTS.md` 双份漂移。

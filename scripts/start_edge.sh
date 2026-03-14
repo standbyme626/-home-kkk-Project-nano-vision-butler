@@ -8,7 +8,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${EDGE_INTERVAL_SEC:=5}"
 : "${EDGE_DEVICE_ID:=rk3566-dev-01}"
 : "${EDGE_CAMERA_ID:=cam-entry-01}"
-: "${EDGE_BACKEND_BASE_URL:=http://127.0.0.1:8000}"
+: "${EDGE_BACKEND_BASE_URL:=http://100.92.134.46:8000}"
 : "${EDGE_CAPTURE_SOURCE:=}"
 : "${EDGE_CAPTURE_RESOLUTION:=1280x720}"
 : "${EDGE_CAPTURE_FPS:=25}"
@@ -23,6 +23,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 : "${EDGE_RKNN_MODEL_VERSION:=}"
 : "${EDGE_RKNN_INPUT_SIZE:=640x640}"
 : "${EDGE_RKNN_LABELS:=person,package,car}"
+: "${EDGE_ANALYSIS_ENABLE:=1}"
+: "${EDGE_ANALYSIS_OCR_ENABLE:=1}"
+: "${EDGE_ANALYSIS_MIN_IMPORTANCE_OCR:=4}"
+: "${EDGE_ANALYSIS_PROFILE:=backend_heavy_v1}"
 : "${EDGE_SNAPSHOT_DIR:=${ROOT_DIR}/data/edge_device/snapshots}"
 : "${EDGE_CLIP_DIR:=${ROOT_DIR}/data/edge_device/clips}"
 : "${EDGE_SNAPSHOT_BUFFER_SIZE:=32}"
@@ -57,6 +61,10 @@ export EDGE_RKNN_MODEL_PATH
 export EDGE_RKNN_MODEL_VERSION
 export EDGE_RKNN_INPUT_SIZE
 export EDGE_RKNN_LABELS
+export EDGE_ANALYSIS_ENABLE
+export EDGE_ANALYSIS_OCR_ENABLE
+export EDGE_ANALYSIS_MIN_IMPORTANCE_OCR
+export EDGE_ANALYSIS_PROFILE
 export EDGE_SNAPSHOT_DIR
 export EDGE_CLIP_DIR
 export EDGE_SNAPSHOT_BUFFER_SIZE
@@ -83,6 +91,10 @@ echo "[INFO] RKNN model path    : ${EDGE_RKNN_MODEL_PATH:-<auto>}"
 echo "[INFO] RKNN model version : ${EDGE_RKNN_MODEL_VERSION:-<auto>}"
 echo "[INFO] RKNN input size    : ${EDGE_RKNN_INPUT_SIZE}"
 echo "[INFO] RKNN labels        : ${EDGE_RKNN_LABELS}"
+echo "[INFO] Analysis enable    : ${EDGE_ANALYSIS_ENABLE}"
+echo "[INFO] Analysis OCR       : ${EDGE_ANALYSIS_OCR_ENABLE}"
+echo "[INFO] Analysis min imp   : ${EDGE_ANALYSIS_MIN_IMPORTANCE_OCR}"
+echo "[INFO] Analysis profile   : ${EDGE_ANALYSIS_PROFILE}"
 echo "[INFO] Snapshot dir       : ${EDGE_SNAPSHOT_DIR}"
 echo "[INFO] Clip dir           : ${EDGE_CLIP_DIR}"
 echo "[INFO] Snapshot buf size  : ${EDGE_SNAPSHOT_BUFFER_SIZE}"

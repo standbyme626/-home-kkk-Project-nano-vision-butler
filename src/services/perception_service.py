@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 from src.db.repositories.audit_repo import AuditRepo
@@ -16,6 +16,9 @@ from src.schemas.security import AuditLog
 from src.security.security_guard import SecurityGuard
 from src.services.memory_service import MemoryService
 from src.settings import AppConfig
+
+if TYPE_CHECKING:
+    from src.services.ocr_service import OCRService
 
 
 class PerceptionService:
@@ -33,12 +36,14 @@ class PerceptionService:
         memory_service: MemoryService,
         config: AppConfig,
         security_guard: SecurityGuard,
+        ocr_service: OCRService | None = None,
     ) -> None:
         self._device_repo = device_repo
         self._audit_repo = audit_repo
         self._memory_service = memory_service
         self._config = config
         self._security_guard = security_guard
+        self._ocr_service = ocr_service
         self._device_profiles = self._build_device_profiles()
 
     def ingest_event(self, payload: dict[str, Any]) -> dict[str, Any]:
@@ -99,6 +104,12 @@ class PerceptionService:
                 )
 
             self._trigger_state_refresh_hook(observation=observation, promoted_event=promoted_event)
+            analysis_report = self._trigger_backend_analysis(
+                payload=ingest_payload,
+                observation=observation,
+                promoted_event=promoted_event,
+                trace_id=trace_id,
+            )
 
             return {
                 "accepted": True,
@@ -108,6 +119,7 @@ class PerceptionService:
                 "observation_id": observation.id,
                 "event_id": promoted_event.id if promoted_event else None,
                 "event_promoted": promoted_event is not None,
+                "analysis": analysis_report,
                 "received_at": utc_now_iso8601(),
             }
         except ValueError as exc:
@@ -315,6 +327,106 @@ class PerceptionService:
         # Reserved integration hook for T6 state_service.
         _ = (observation, promoted_event)
 
+    def _trigger_backend_analysis(
+        self,
+        *,
+        payload: dict[str, Any],
+        observation: Observation,
+        promoted_event: Event | None,
+        trace_id: str | None,
+    ) -> dict[str, Any] | None:
+        requests = self._normalize_analysis_requests(payload.get("analysis_requests"))
+        if not requests:
+            return None
+
+        report: dict[str, Any] = {
+            "requested": len(requests),
+            "executed": 0,
+            "skipped": 0,
+            "failed": 0,
+            "results": [],
+        }
+
+        if not self._analysis_enabled():
+            report["skipped"] = len(requests)
+            report["status"] = "skipped"
+            report["reason"] = "policy_disabled"
+            return report
+        if self._ocr_service is None:
+            report["skipped"] = len(requests)
+            report["status"] = "skipped"
+            report["reason"] = "ocr_service_unavailable"
+            return report
+
+        default_input_uri = self._as_optional_text(payload.get("snapshot_uri"))
+        for request in requests:
+            req_type = request["type"]
+            input_uri = self._as_optional_text(request.get("input_uri")) or default_input_uri
+            if not input_uri:
+                report["skipped"] += 1
+                report["results"].append(
+                    {
+                        "type": req_type,
+                        "status": "skipped",
+                        "reason": "missing_input_uri",
+                    }
+                )
+                continue
+
+            ocr_payload: dict[str, Any] = {
+                "input_uri": input_uri,
+                "observation_id": observation.id,
+                "event_id": promoted_event.id if promoted_event else None,
+                "trace_id": trace_id,
+                "promote_to_event": False,
+            }
+            if req_type == "ocr_extract_fields" and isinstance(request.get("field_schema"), (dict, list)):
+                ocr_payload["field_schema"] = request["field_schema"]
+
+            try:
+                if req_type == "ocr_extract_fields":
+                    result = self._ocr_service.extract_fields(ocr_payload)
+                else:
+                    result = self._ocr_service.quick_read(ocr_payload)
+                report["executed"] += 1
+                report["results"].append(
+                    {
+                        "type": req_type,
+                        "status": "ok",
+                        "ocr_result_id": self._as_optional_text(result.get("ocr_result_id")),
+                    }
+                )
+            except ValueError as exc:
+                report["failed"] += 1
+                report["results"].append(
+                    {
+                        "type": req_type,
+                        "status": "failed",
+                        "reason": str(exc),
+                    }
+                )
+
+        if report["failed"] > 0 and report["executed"] > 0:
+            report["status"] = "partial"
+        elif report["failed"] > 0:
+            report["status"] = "failed"
+        elif report["executed"] > 0:
+            report["status"] = "ok"
+        else:
+            report["status"] = "skipped"
+
+        self._write_audit(
+            action="perception_backend_analysis",
+            decision="allow" if report["failed"] == 0 else "deny",
+            reason=str(report["status"]),
+            device_id=observation.device_id,
+            target_type="observation",
+            target_id=observation.id,
+            trace_id=trace_id,
+            meta=report,
+        )
+        return report
+
     def _write_audit(
         self,
         *,
@@ -405,6 +517,7 @@ class PerceptionService:
 
     def _normalize_event_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(payload)
+        normalized["analysis_requests"] = self._normalize_analysis_requests(normalized.get("analysis_requests"))
         schema_version = self._as_optional_text(normalized.get("schema_version"))
         if not schema_version:
             return normalized
@@ -454,6 +567,42 @@ class PerceptionService:
                 normalized["zone_id"] = self._as_optional_text(primary.get("zone_id"))
 
         return normalized
+
+    def _normalize_analysis_requests(self, raw_value: Any) -> list[dict[str, Any]]:
+        if raw_value is None:
+            return []
+        if not isinstance(raw_value, list):
+            raise ValueError("event payload analysis_requests must be a list")
+
+        requests: list[dict[str, Any]] = []
+        for item in raw_value:
+            if not isinstance(item, dict):
+                continue
+            req_type = self._as_optional_text(item.get("type"))
+            if req_type not in {"ocr_quick_read", "ocr_extract_fields"}:
+                continue
+            normalized: dict[str, Any] = {
+                "type": req_type,
+                "priority": self._as_optional_text(item.get("priority")),
+                "reason": self._as_optional_text(item.get("reason")),
+                "input_uri": self._as_optional_text(item.get("input_uri")),
+                "object_class": self._as_optional_text(item.get("object_class")),
+                "track_id": self._as_optional_text(item.get("track_id")),
+            }
+            field_schema = item.get("field_schema")
+            if isinstance(field_schema, (dict, list)):
+                normalized["field_schema"] = field_schema
+            requests.append(normalized)
+        return requests
+
+    def _analysis_enabled(self) -> bool:
+        policy = self._config.policies.get("edge_analysis", {})
+        if not isinstance(policy, dict):
+            return True
+        flag = policy.get("enable_backend_analysis")
+        if isinstance(flag, bool):
+            return flag
+        return True
 
     def _normalize_heartbeat_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(payload)

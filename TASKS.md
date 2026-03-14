@@ -633,6 +633,28 @@
 
 ---
 
+## T13-Hotfix 边缘地址与设备信息修正
+状态：DONE（2026-03-14）
+优先级：P2
+依赖：T13I
+
+### 目标
+将边缘链路默认地址与设备信息更新为当前真实网络信息，避免测试和部署时使用错误地址。
+
+### 输出
+- AGENTS.md（新增本地地址备忘）
+- scripts/start_edge.sh（默认 EDGE_BACKEND_BASE_URL）
+- scripts/stack_ctl.sh（默认 EDGE_BACKEND_BASE_URL）
+- edge_device/api/server.py（load_config_from_env 默认 backend_base_url）
+- config/cameras.yaml / config/runtime/cameras.yaml（RTSP 地址）
+
+### 验收
+- 默认 backend 地址为 `http://100.92.134.46:8000`
+- 默认 RTSP 地址为 `rtsp://100.103.105.108/live`
+- AGENTS.md 含用户指定的 tailscale/SSH 备忘信息
+
+---
+
 ## T14 安全与访问控制落地
 状态：DONE
 优先级：P1
@@ -678,6 +700,29 @@
 
 ---
 
+## T15-Hotfix 测试文档拆分与必要性分析
+状态：DONE
+优先级：P2
+依赖：T15
+
+### 目标
+在不修改源文档的前提下，把 `测试.md` 拆成可执行、可复盘的边缘测试文档，并完成最小回归验证。
+
+### 输出
+- docs/edge/testing_index.md
+- docs/edge/model_selection_strategy.md
+- docs/edge/model_ab_test_matrix.md
+- docs/edge/test_necessity_analysis.md
+- PROGRESS_CHECKLIST.md（A/B 对应项打勾）
+
+### 验收
+- `测试.md` 保留原文，不做覆盖修改
+- 拆分后文档满足“一文一职责”，可直接按步骤执行
+- 至少完成一组 edge 相关回归测试并记录结果
+- TASKS 与 PROGRESS_CHECKLIST 状态同步
+
+---
+
 ## T16 最终联调收尾与交付
 状态：DONE
 优先级：P1
@@ -697,6 +742,33 @@
 - smoke test 可运行
 - 文档可指导首次启动
 - 未完成部分有诚实标注
+
+---
+
+## T17 轻前端重后端改造第一阶段
+状态：DONE（2026-03-14）
+优先级：P1
+依赖：T16
+
+### 目标
+将 RK3566 收敛为轻实时感知端，把 OCR 重分析迁移到后端触发执行，形成“事件提示 + 后端执行”的第一阶段闭环。
+
+### 输出
+- docs/edge/light_edge_heavy_backend_refactor.md
+- edge_device/compression/event_compressor.py（analysis_requests 输出）
+- src/services/perception_service.py（backend OCR analysis hook）
+- src/dependencies.py（OCRService 注入 perception）
+- schemas/edge_event_envelope.schema.json（analysis 字段扩展）
+- docs/edge/protocol.md（协议说明同步）
+- tests/integration/test_device_event_flow.py（后端 OCR 触发集成测试）
+- tests/integration/test_edge_event_quality.py（edge analysis 请求测试）
+- tests/unit/test_edge_protocol_schemas.py（schema 扩展校验）
+
+### 验收
+- edge event payload 可携带 analysis_requests 并通过 schema 校验
+- ingest_event 收到分析请求后可触发 OCR 并写入 ocr_results
+- 审计日志存在 perception_backend_analysis 记录
+- 现有 heartbeat/event 主链路兼容
 
 ---
 
